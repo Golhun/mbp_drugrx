@@ -1,0 +1,11 @@
+{
+	"name": "host/mbp_drugrx",
+	"autoload": {
+		"psr-4": {
+			"Host\\MbpDrugrx\\": "src/"
+		}
+	},
+	"require": {
+		"guzzlehttp/guzzle": "^7.9"
+	}
+}
