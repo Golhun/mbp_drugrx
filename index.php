@@ -1,61 +1,48 @@
-<?php
-require __DIR__ . '/vendor/autoload.php';
-
-use MBPDrugRX\DrugInteractionChecker;
-
-$checker = new DrugInteractionChecker();
-$drugInfo = [];
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $drugName = $_POST['drugName'] ?? '';
-    if ($drugName) {
-        $drugInfo = $checker->getDrugInfo($drugName);
-    }
-}
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MBP DrugRX</title>
-    <!-- Tailwind CSS -->
+    <title>Drug Interaction Checker</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Material Icons -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 </head>
-<body class="bg-gray-100 font-sans">
-    <div class="container mx-auto p-4">
-        <h1 class="text-3xl font-bold mb-4 text-center">MBP DrugRX Checker</h1>
-        <form method="POST" class="bg-white shadow rounded-lg p-4">
-            <div class="mb-4">
-                <label for="drugName" class="block text-gray-700 font-bold mb-2">Drug Name</label>
-                <input type="text" id="drugName" name="drugName" 
-                    class="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                    placeholder="Enter the drug name" required>
+<body class="bg-gray-100 text-gray-800 min-h-screen flex items-center justify-center">
+    <div class="max-w-3xl w-full p-6 bg-white shadow-lg rounded-lg">
+        <h1 class="text-3xl font-bold text-center text-blue-600 mb-6">
+            <span class="material-icons align-middle">medication</span> Drug Interaction Checker
+        </h1>
+
+        <!-- Input Form -->
+        <form id="drug-form" class="space-y-4">
+            <div>
+                <label for="drugs" class="block text-lg font-medium text-gray-700">
+                    Enter 1 to 5 Drug Names (comma-separated):
+                    <span class="material-icons text-gray-400 align-middle" title="Example: ibuprofen, aspirin">help_outline</span>
+                </label>
+                <textarea id="drugs" name="drugs" rows="3"
+                          class="w-full mt-2 p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="E.g., ibuprofen, acetaminophen"></textarea>
             </div>
-            <button type="submit" 
-                class="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600">
-                <span class="material-icons align-middle">search</span> Check Interactions
+            <button type="button" id="submit-button"
+                    class="w-full bg-blue-500 text-white py-3 rounded-md hover:bg-blue-600 flex items-center justify-center">
+                <span class="material-icons mr-2">search</span> Check Interactions
             </button>
         </form>
 
-        <?php if ($drugInfo): ?>
-            <div class="mt-6 bg-white shadow rounded-lg p-4">
-                <h2 class="text-xl font-bold mb-4">Results</h2>
-                <ul class="space-y-2">
-                    <?php foreach ($drugInfo as $result): ?>
-                        <li class="border-b pb-2">
-                            <p><strong>Product:</strong> <?= htmlspecialchars($result['patient']['drug'][0]['medicinalproduct'] ?? 'Unknown') ?></p>
-                            <p><strong>Reaction:</strong> <?= htmlspecialchars($result['patient']['reaction'][0]['reactionmeddrapt'] ?? 'Unknown') ?></p>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-        <?php elseif ($_SERVER['REQUEST_METHOD'] === 'POST'): ?>
-            <p class="mt-4 text-red-500">No results found. Please try another drug.</p>
-        <?php endif; ?>
+        <!-- Skeleton Loading -->
+        <div id="loading" class="hidden mt-6 space-y-4">
+            <div class="animate-pulse bg-gray-300 h-16 w-full rounded-md"></div>
+            <div class="animate-pulse bg-gray-300 h-16 w-full rounded-md"></div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="mt-6 space-y-4"></div>
     </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
+
