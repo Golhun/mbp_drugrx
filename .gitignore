@@ -1,0 +1,72 @@
+# 🛡️ General Ignored Files
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.cache
+
+# 🚀 Environment Variables and Credentials
+.env
+.env.local
+.env.*.local
+config.php
+
+# 🔧 Composer Dependencies
+/vendor/
+composer.lock
+
+# 📊 IDE and Editor Files
+.idea/
+.vscode/
+*.iml
+
+# 🛡️ Logs and Debug Files
+logs/
+debug.log
+error.log
+
+# 📁 Cache and Temp Files
+/tmp/
+/cache/
+*.swp
+*.bak
+*.old
+
+# 📝 Specific Files for Your Project
+server.php.bak
+server.php~
+test_api_request.php
+test_rxnorm.php
+
+# 🖥️ Operating System Files
+*.DS_Store
+ehthumbs.db
+Icon?
+
+# 🔗 Node Modules (if Tailwind is managed via Node)
+node_modules/
+package-lock.json
+yarn.lock
+
+# 📸 Static Assets (optional, if compiled externally)
+public/assets/
+dist/
+build/
+
+# 🧪 Testing Framework Outputs
+phpunit.xml
+phpunit.xml.dist
+/build/
+coverage/
+
+# 🚀 Dependency Management Lockfiles
+package-lock.json
+yarn.lock
+
+# 🛠️ Deployment Files (Optional)
+.env.production
+deploy/
+
+# 📄 Ignore SQL Dumps
+*.sql
+*.sql.gz
