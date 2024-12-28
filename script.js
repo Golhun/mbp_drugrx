@@ -8,15 +8,18 @@ const loadingIndicator = document.getElementById("loading");
 submitButton.addEventListener("click", async function () {
 	const drugs = drugsInput.value.trim();
 
+	// Validate user input
 	if (!drugs) {
 		alert("⚠️ Please enter at least one drug name.");
 		return;
 	}
 
+	// Clear previous results and show loading indicator
 	resultsContainer.innerHTML = "";
 	loadingIndicator.classList.remove("hidden");
 
 	try {
+		// Fetch data from the server
 		const results = await fetchDrugInteractions(drugs);
 		displayResults(results);
 	} catch (error) {
@@ -34,12 +37,14 @@ async function fetchDrugInteractions(drugs) {
 		body: JSON.stringify({ drugs }),
 	});
 
+	// Handle network or server errors
 	if (!response.ok) {
 		throw new Error("Failed to fetch data from the server.");
 	}
 
 	const data = await response.json();
 
+	// Handle API-level errors
 	if (data.error) {
 		throw new Error(data.error);
 	}
@@ -51,24 +56,56 @@ async function fetchDrugInteractions(drugs) {
 function displayResults(results) {
 	resultsContainer.innerHTML = "";
 
+	// Handle empty results
 	if (results.length === 0) {
-		resultsContainer.innerHTML = `<p class="text-gray-600 text-center">No results found for the entered drugs.</p>`;
+		resultsContainer.innerHTML = `
+			<p class="text-gray-600 text-center">No results found for the entered drugs.</p>`;
 		return;
 	}
 
+	// Display each result in a formatted card
 	results.forEach((result) => {
 		const card = document.createElement("div");
-		card.classList.add("p-4", "bg-white", "shadow-md", "rounded-md", "mb-4");
+		card.classList.add(
+			"p-4",
+			"bg-white",
+			"shadow-md",
+			"rounded-md",
+			"mb-4",
+			"border",
+			"hover:shadow-lg"
+		);
 
 		card.innerHTML = `
-            <h3 class="text-lg font-bold text-blue-600">${result.drug}</h3>
-            <p class="text-gray-700"><strong>Warnings:</strong> ${
+            <h3 class="text-lg font-bold text-blue-600 mb-2">${result.drug}</h3>
+            <p class="text-gray-700 mb-1"><strong>Purpose:</strong> ${
+							result.purpose || "N/A"
+						}</p>
+            <p class="text-gray-700 mb-1"><strong>Indications:</strong> ${
+							result.indications_and_usage || "N/A"
+						}</p>
+            <p class="text-gray-700 mb-1"><strong>Description:</strong> ${
+							result.description || "N/A"
+						}</p>
+            <p class="text-gray-700 mb-1"><strong>Warnings:</strong> ${
 							result.warnings || "N/A"
 						}</p>
-            <p class="text-gray-700"><strong>Interactions:</strong> ${
+            <p class="text-gray-700 mb-1"><strong>Interactions:</strong> ${
 							result.interactions || "N/A"
 						}</p>
-            ${result.error ? `<p class="text-red-500">${result.error}</p>` : ""}
+            ${
+							result.reference
+								? `<p class="text-gray-700 mb-1"><strong>Reference:</strong> <a href="${result.reference}" target="_blank" class="text-blue-500 hover:underline">${result.reference}</a></p>`
+								: `<p class="text-gray-700 mb-1"><strong>Reference:</strong> N/A</p>`
+						}
+            <p class="text-gray-700 mb-1"><strong>Reference Text:</strong> ${
+							result.reference_text || "N/A"
+						}</p>
+            ${
+							result.error
+								? `<p class="text-red-500 mt-2">${result.error}</p>`
+								: ""
+						}
         `;
 
 		resultsContainer.appendChild(card);
@@ -77,5 +114,13 @@ function displayResults(results) {
 
 // 🟢 Display Error
 function displayError(message) {
-	resultsContainer.innerHTML = `<p class="text-red-500 text-center">${message}</p>`;
+	resultsContainer.innerHTML = `
+		<p class="text-red-500 text-center">${message}</p>`;
+}
+
+// 🟢 Reset Form
+function resetForm() {
+	drugsInput.value = "";
+	resultsContainer.innerHTML = "";
+	loadingIndicator.classList.add("hidden");
 }

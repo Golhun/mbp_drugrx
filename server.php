@@ -64,11 +64,21 @@ function getDrugInfoFromOpenFDA($drugs) {
             $apiResponse = fetchFromOpenFDA($url);
             $warnings = $apiResponse['warnings'][0] ?? 'No warnings available';
             $interactions = $apiResponse['drug_interactions'][0] ?? 'No interaction data available';
+            $indications = $apiResponse['indications_and_usage'] ?? 'No indications available';
+            $purpose = $apiResponse['purpose'] ?? 'No purpose available';
+            $description = $apiResponse['description'] ?? 'No description available';
+            $reference = $apiResponse['reference'][0] ?? 'No reference available';
+            $reference_text = $apiResponse['reference_text'] ?? 'No reference text available';
 
             $results[] = [
                 'drug' => $drug,
                 'warnings' => $warnings,
                 'interactions' => $interactions,
+                'indications_and_usage' => $indications,
+                'purpose' => $purpose,
+                'description' => $description,
+                'reference' => $reference,
+                'reference_text' => $reference_text,
             ];
         } catch (Exception $e) {
             // Add partial data with an error message for failed drugs
@@ -87,8 +97,8 @@ function getDrugInfoFromOpenFDA($drugs) {
 function fetchFromOpenFDA($url) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0); // ❗ Disables SSL Host verification / set to 2 to activate
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0); // ❗ Disables SSL Peer verification / set to true to activate
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0); 
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
     curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 
     $response = curl_exec($ch);
