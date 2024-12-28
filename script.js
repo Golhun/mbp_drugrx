@@ -1,77 +1,81 @@
-document.getElementById('submit-button').addEventListener('click', async function () {
-    const drugsInput = document.getElementById('drugs').value.trim();
-    const resultsContainer = document.getElementById('results');
-    const loadingIndicator = document.getElementById('loading');
+// 🎯 DOM Elements
+const submitButton = document.getElementById("submit-button");
+const drugsInput = document.getElementById("drugs");
+const resultsContainer = document.getElementById("results");
+const loadingIndicator = document.getElementById("loading");
 
-    if (!drugsInput) {
-        alert('Please enter at least one drug name.');
-        return;
-    }
+// 🎯 Event Listener for Interaction Check
+submitButton.addEventListener("click", async function () {
+	const drugs = drugsInput.value.trim();
 
-    // Show the loading skeleton
-    resultsContainer.innerHTML = '';
-    loadingIndicator.classList.remove('hidden');
+	if (!drugs) {
+		alert("⚠️ Please enter at least one drug name.");
+		return;
+	}
 
-    try {
-        const response = await fetch('server.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ drugs: drugsInput }),
-        });
+	resultsContainer.innerHTML = "";
+	loadingIndicator.classList.remove("hidden");
 
-        if (!response.ok) {
-            throw new Error('Failed to fetch data from the server.');
-        }
-
-        const data = await response.json();
-
-        // Hide the loading skeleton
-        loadingIndicator.classList.add('hidden');
-
-        // Render results
-        resultsContainer.innerHTML = '';
-        Object.entries(data).forEach(([drug, info]) => {
-            const card = document.createElement('div');
-            card.classList.add('p-4', 'bg-white', 'shadow-md', 'rounded-md', 'border', 'hover:shadow-lg', 'transition-shadow', 'space-y-4');
-
-            const warnings = info.warnings || 'No warnings available';
-            const interactions = info.interactions || 'No interaction data available';
-
-            const severityClass = warnings.includes('severe')
-                ? 'bg-red-50 border-l-4 border-red-500'
-                : warnings.includes('moderate')
-                ? 'bg-yellow-50 border-l-4 border-yellow-500'
-                : 'bg-green-50 border-l-4 border-green-500';
-
-            card.innerHTML = `
-                <h3 class="text-xl font-bold text-blue-600 border-b pb-2">${drug}</h3>
-                <div class="p-3 rounded-md ${severityClass}">
-                    <h4 class="text-lg font-semibold">Warnings</h4>
-                    <p class="text-gray-700 mt-1 truncate">${warnings}</p>
-                    ${warnings.length > 150 ? '<button class="text-blue-500 mt-2 toggle-button">Show More</button>' : ''}
-                </div>
-                <div class="p-3 rounded-md bg-yellow-50 border-l-4 border-yellow-500">
-                    <h4 class="text-lg font-semibold">Interactions</h4>
-                    <p class="text-gray-700 mt-1">${interactions}</p>
-                </div>
-            `;
-
-            resultsContainer.appendChild(card);
-        });
-
-        // Add toggle functionality for long warnings
-        document.querySelectorAll('.toggle-button').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const paragraph = e.target.previousElementSibling;
-                paragraph.classList.toggle('truncate');
-                button.textContent = paragraph.classList.contains('truncate') ? 'Show More' : 'Show Less';
-            });
-        });
-    } catch (error) {
-        loadingIndicator.classList.add('hidden');
-        resultsContainer.innerHTML = `<p class="text-red-500 text-center">Error: ${error.message}</p>`;
-    }
+	try {
+		const results = await fetchDrugInteractions(drugs);
+		displayResults(results);
+	} catch (error) {
+		displayError(`Error: ${error.message}`);
+	} finally {
+		loadingIndicator.classList.add("hidden");
+	}
 });
 
+// 🟢 Fetch Data from OpenFDA API
+async function fetchDrugInteractions(drugs) {
+	const response = await fetch("server.php", {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ drugs }),
+	});
+
+	if (!response.ok) {
+		throw new Error("Failed to fetch data from the server.");
+	}
+
+	const data = await response.json();
+
+	if (data.error) {
+		throw new Error(data.error);
+	}
+
+	return data.results || [];
+}
+
+// 🟢 Display Results
+function displayResults(results) {
+	resultsContainer.innerHTML = "";
+
+	if (results.length === 0) {
+		resultsContainer.innerHTML = `<p class="text-gray-600 text-center">No results found for the entered drugs.</p>`;
+		return;
+	}
+
+	results.forEach((result) => {
+		const card = document.createElement("div");
+		card.classList.add("p-4", "bg-white", "shadow-md", "rounded-md", "mb-4");
+
+		card.innerHTML = `
+            <h3 class="text-lg font-bold text-blue-600">${result.drug}</h3>
+            <p class="text-gray-700"><strong>Warnings:</strong> ${
+							result.warnings || "N/A"
+						}</p>
+            <p class="text-gray-700"><strong>Interactions:</strong> ${
+							result.interactions || "N/A"
+						}</p>
+            ${result.error ? `<p class="text-red-500">${result.error}</p>` : ""}
+        `;
+
+		resultsContainer.appendChild(card);
+	});
+}
+
+// 🟢 Display Error
+function displayError(message) {
+	resultsContainer.innerHTML = `<p class="text-red-500 text-center">${message}</p>`;
+}

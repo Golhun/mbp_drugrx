@@ -1,0 +1,12 @@
+[2024-12-27 23:51:57] Error: SQLSTATE[HY000] [1045] Access denied for user 'username'@'localhost' (using password: YES)
+[2024-12-27 23:55:13] Error: Failed to fetch interaction data for aspirin: cURL Error: SSL certificate problem: unable to get local issuer certificate
+[2024-12-27 23:55:20] Error: cURL Error: SSL certificate problem: unable to get local issuer certificate
+[2024-12-27 23:55:23] Error: cURL Error: SSL certificate problem: unable to get local issuer certificate
+[2024-12-27 23:55:26] Error: cURL Error: SSL certificate problem: unable to get local issuer certificate
+[2024-12-27 23:56:42] Error: Failed to fetch interaction data for aspirin: cURL Error: SSL certificate problem: unable to get local issuer certificate
+[2024-12-27 23:56:53] Error: cURL Error: SSL certificate problem: unable to get local issuer certificate
+[2024-12-28 08:41:45] Error: Failed to fetch data for aspirin: cURL Error: SSL certificate problem: unable to get local issuer certificate
+[2024-12-28 08:41:49] Error: Failed to fetch data for paracetamol: cURL Error: SSL certificate problem: unable to get local issuer certificate
+[2024-12-28 08:50:48] Error: Failed to fetch data for paracetamol: Invalid or empty response from OpenFDA.
+[2024-12-28 08:52:12] Error: Failed to fetch data for paracetamol: Invalid or empty response from OpenFDA.
+[2024-12-28 08:52:58] Error: Failed to fetch data for paracetamol: Invalid or empty response from OpenFDA.
