@@ -6,45 +6,34 @@ header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: DENY');
 header('X-XSS-Protection: 1; mode=block');
 
-// 🚀 Enable error reporting in development only
-// error_reporting(E_ALL); ini_set('display_errors', 1);
-
-// 🔐 Rate Limiting (Basic Implementation)
+// 🚀 Rate Limiting
 session_start();
 if (!isset($_SESSION['last_request_time'])) {
     $_SESSION['last_request_time'] = time();
 } else {
     $time_diff = time() - $_SESSION['last_request_time'];
-    if ($time_diff < 2) { // Allow one request every 2 seconds
+    if ($time_diff < 2) {
         echo json_encode(['error' => 'Too many requests. Please wait before retrying.']);
         exit;
     }
     $_SESSION['last_request_time'] = time();
 }
 
-// 📝 Parse JSON input securely
+// 📝 Parse JSON Input
 $request = json_decode(file_get_contents('php://input'), true);
-
 if (!$request || !isset($request['drugs'])) {
     echo json_encode(['error' => 'Invalid or malformed JSON request.']);
     exit;
 }
 
-// 🟢 **Sanitize and Validate Input**
-if (!is_string($request['drugs'])) {
-    echo json_encode(['error' => 'Invalid drug input format.']);
-    exit;
-}
-
-// Sanitize drug inputs
+// 🟢 Validate Input
 $drugs = array_filter(array_map('trim', explode(',', htmlspecialchars($request['drugs']))));
-
 if (count($drugs) < 1 || count($drugs) > 5) {
     echo json_encode(['error' => 'Please enter between 1 and 5 valid drug names.']);
     exit;
 }
 
-// 🟢 **Fetch Drug Information from OpenFDA API**
+// 🟢 Fetch Data from OpenFDA
 try {
     $results = getDrugInfoFromOpenFDA($drugs);
     echo json_encode(['results' => $results]);
@@ -53,22 +42,20 @@ try {
     echo json_encode(['error' => 'Failed to fetch drug data from OpenFDA.']);
 }
 
-// 🟡 **Function: Get Drug Information from OpenFDA API**
+// 🟡 Function: Fetch Drug Info
 function getDrugInfoFromOpenFDA($drugs) {
     $results = [];
 
     foreach ($drugs as $drug) {
-        $url = "https://api.fda.gov/drug/label.json?search=openfda.brand_name:\"$drug\"&limit=1";
+        $labelUrl = "https://api.fda.gov/drug/label.json?search=openfda.brand_name:\"$drug\"&limit=1";
 
         try {
-            $apiResponse = fetchFromOpenFDA($url);
-            $warnings = $apiResponse['warnings'][0] ?? 'No warnings available';
-            $interactions = $apiResponse['drug_interactions'][0] ?? 'No interaction data available';
-            $indications = $apiResponse['indications_and_usage'] ?? 'No indications available';
-            $purpose = $apiResponse['purpose'] ?? 'No purpose available';
-            $description = $apiResponse['description'] ?? 'No description available';
-            $reference = $apiResponse['reference'][0] ?? 'No reference available';
-            $reference_text = $apiResponse['reference_text'] ?? 'No reference text available';
+            $labelData = fetchFromOpenFDA($labelUrl);
+            $warnings = $labelData['warnings'][0] ?? 'No warnings available';
+            $interactions = $labelData['drug_interactions'][0] ?? 'No interaction data available';
+            $indications = $labelData['indications_and_usage'] ?? 'No indications available';
+            $purpose = $labelData['purpose'] ?? 'No purpose available';
+            $description = $labelData['description'] ?? 'No description available';
 
             $results[] = [
                 'drug' => $drug,
@@ -77,11 +64,8 @@ function getDrugInfoFromOpenFDA($drugs) {
                 'indications_and_usage' => $indications,
                 'purpose' => $purpose,
                 'description' => $description,
-                'reference' => $reference,
-                'reference_text' => $reference_text,
             ];
         } catch (Exception $e) {
-            // Add partial data with an error message for failed drugs
             $results[] = [
                 'drug' => $drug,
                 'error' => 'Failed to fetch data from OpenFDA API: ' . $e->getMessage()
@@ -93,11 +77,11 @@ function getDrugInfoFromOpenFDA($drugs) {
     return $results;
 }
 
-// 🟡 **Function: Fetch Data from OpenFDA API (SSL Disabled in Dev Mode)**
+// 🟡 Function: Fetch from OpenFDA API
 function fetchFromOpenFDA($url) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0); 
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
     curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 
@@ -117,7 +101,7 @@ function fetchFromOpenFDA($url) {
     return $json['results'][0];
 }
 
-// 🟡 **Function: Log Critical Errors**
+// 🟡 Function: Log Errors
 function logError($message) {
     $logFile = __DIR__ . '/error.log';
     $error = "[" . date('Y-m-d H:i:s') . "] Error: $message\n";

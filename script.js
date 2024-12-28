@@ -76,36 +76,36 @@ function displayResults(results) {
 			"hover:shadow-lg"
 		);
 
+		// Error Handling for Individual Drug
+		const errorHTML = result.error
+			? `<p class="text-red-500 mt-2"><strong>Error:</strong> ${result.error}</p>`
+			: "";
+
 		card.innerHTML = `
             <h3 class="text-lg font-bold text-blue-600 mb-2">${result.drug}</h3>
-            <p class="text-gray-700 mb-1"><strong>Purpose:</strong> ${
-							result.purpose || "N/A"
-						}</p>
-            <p class="text-gray-700 mb-1"><strong>Indications:</strong> ${
-							result.indications_and_usage || "N/A"
-						}</p>
-            <p class="text-gray-700 mb-1"><strong>Description:</strong> ${
-							result.description || "N/A"
-						}</p>
-            <p class="text-gray-700 mb-1"><strong>Warnings:</strong> ${
-							result.warnings || "N/A"
-						}</p>
-            <p class="text-gray-700 mb-1"><strong>Interactions:</strong> ${
-							result.interactions || "N/A"
-						}</p>
-            ${
-							result.reference
-								? `<p class="text-gray-700 mb-1"><strong>Reference:</strong> <a href="${result.reference}" target="_blank" class="text-blue-500 hover:underline">${result.reference}</a></p>`
-								: `<p class="text-gray-700 mb-1"><strong>Reference:</strong> N/A</p>`
-						}
-            <p class="text-gray-700 mb-1"><strong>Reference Text:</strong> ${
-							result.reference_text || "N/A"
-						}</p>
-            ${
-							result.error
-								? `<p class="text-red-500 mt-2">${result.error}</p>`
-								: ""
-						}
+            
+            <div class="mb-2">
+                <p class="text-gray-700"><strong>Purpose:</strong> ${
+									result.purpose || "N/A"
+								}</p>
+                <p class="text-gray-700"><strong>Indications:</strong> ${
+									result.indications_and_usage || "N/A"
+								}</p>
+                <p class="text-gray-700"><strong>Description:</strong> ${
+									result.description || "N/A"
+								}</p>
+            </div>
+
+            <div class="mb-2">
+                <p class="text-gray-700"><strong>Warnings:</strong> ${
+									result.warnings || "N/A"
+								}</p>
+                <p class="text-gray-700"><strong>Interactions:</strong> ${
+									result.interactions || "N/A"
+								}</p>
+            </div>
+
+            ${errorHTML}
         `;
 
 		resultsContainer.appendChild(card);
