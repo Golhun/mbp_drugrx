@@ -7,48 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <style>
-        /* Custom Styles */
+        /* Fallback styles only where Tailwind lacks coverage */
         .suggestions {
-            position: absolute;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 1000;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .suggestion-item {
-            padding: 8px;
-            cursor: pointer;
-        }
-
-        .suggestion-item:hover {
-            background: #f1f1f1;
-        }
-
-        .bubble {
-            display: inline-flex;
-            align-items: center;
-            background: #e2f3ff;
-            border-radius: 9999px;
-            padding: 4px 8px;
-            margin: 4px;
-            font-size: 14px;
-        }
-
-        .bubble button {
-            margin-left: 8px;
-            background: none;
-            border: none;
-            color: red;
-            cursor: pointer;
-        }
-
-        .scrollable-results {
-            max-height: 400px;
-            overflow-y: auto;
+            max-height: 250px;
         }
     </style>
 </head>
@@ -56,8 +17,8 @@
 
     <!-- Header Section -->
     <header class="w-full bg-blue-600 text-white shadow-md py-4 mb-6">
-        <h1 class="text-center text-3xl font-bold">
-            <span class="material-icons align-middle">medication</span>
+        <h1 class="text-center text-3xl font-bold flex items-center justify-center gap-2">
+            <span class="material-icons">medication</span>
             Drug Interaction Checker
         </h1>
     </header>
@@ -65,7 +26,7 @@
     <!-- Main Content -->
     <main class="max-w-4xl w-full px-4 md:px-6 py-6 bg-white shadow-lg rounded-lg">
 
-        <!-- Input Section -->
+        <!-- Search Section -->
         <section>
             <h2 class="text-2xl font-bold mb-4 text-gray-700">Search and Add Drugs</h2>
             
@@ -77,11 +38,13 @@
                 <input type="text" id="drug-search"
                        class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                        placeholder="Type a drug name...">
-                <div id="suggestions" class="suggestions hidden"></div>
+                <div id="suggestions" 
+                     class="absolute bg-white border border-gray-300 rounded-md mt-1 w-full shadow-lg hidden overflow-y-auto suggestions z-50">
+                </div>
             </div>
 
             <!-- Selected Drugs Display -->
-            <div id="selected-drugs" class="mt-4 flex flex-wrap"></div>
+            <div id="selected-drugs" class="mt-4 flex flex-wrap gap-2"></div>
             
             <!-- Check Interactions Button -->
             <button id="check-interactions"
@@ -101,7 +64,7 @@
         </section>
 
         <!-- Results Section -->
-        <section id="results" class="mt-6 space-y-4 scrollable-results">
+        <section id="results" class="mt-6 space-y-4 overflow-y-auto max-h-96">
             <p class="text-center text-gray-600">Your results will appear here.</p>
         </section>
     </main>

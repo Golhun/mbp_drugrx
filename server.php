@@ -49,13 +49,20 @@ if ($type === 'suggestions') {
     $query = trim($request['query'] ?? '');
 
     if (empty($query) || strlen($query) < 2) {
-        echo json_encode(['error' => 'Invalid or too short query.']);
+        echo json_encode(['error' => 'Please enter at least 2 characters.']);
         exit;
     }
 
     try {
-        $stmt = $pdo->prepare("SELECT DISTINCT drug1 FROM drug_interactions WHERE drug1 LIKE :query LIMIT 5");
-        $stmt->execute(['query' => "%$query%"]);
+        // Optimized query using indexed columns
+        $stmt = $pdo->prepare("
+            SELECT DISTINCT drug1 
+            FROM drug_interactions 
+            WHERE drug1 LIKE :query 
+            ORDER BY drug1 ASC 
+            LIMIT 5
+        ");
+        $stmt->execute(['query' => "$query%"]); // Use prefix matching for efficiency
         $suggestions = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
         echo json_encode(['suggestions' => $suggestions]);
@@ -76,30 +83,24 @@ elseif ($type === 'interactions') {
 
     $results = [];
     try {
-        for ($i = 0; $i < count($drugs); $i++) {
-            for ($j = $i + 1; $j < count($drugs); $j++) {
-                $drug1 = htmlspecialchars(trim($drugs[$i]));
-                $drug2 = htmlspecialchars(trim($drugs[$j]));
+        // Use prepared statement with placeholders
+        $placeholders = implode(', ', array_fill(0, count($drugs), '?'));
+        $stmt = $pdo->prepare("
+            SELECT drug1, drug2, interaction_description, interaction_severity
+            FROM drug_interactions
+            WHERE drug1 IN ($placeholders) AND drug2 IN ($placeholders)
+        ");
+        $stmt->execute(array_merge($drugs, $drugs));
 
-                $stmt = $pdo->prepare("
-                    SELECT interaction_description, interaction_severity 
-                    FROM drug_interactions 
-                    WHERE (drug1 = :drug1 AND drug2 = :drug2) 
-                       OR (drug1 = :drug2 AND drug2 = :drug1)
-                ");
-                $stmt->execute(['drug1' => $drug1, 'drug2' => $drug2]);
+        $interactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                $interaction = $stmt->fetch(PDO::FETCH_ASSOC);
-
-                if ($interaction) {
-                    $results[] = [
-                        'drug1' => $drug1,
-                        'drug2' => $drug2,
-                        'interaction_description' => $interaction['interaction_description'],
-                        'interaction_severity' => $interaction['interaction_severity']
-                    ];
-                }
-            }
+        foreach ($interactions as $interaction) {
+            $results[] = [
+                'drug1' => $interaction['drug1'],
+                'drug2' => $interaction['drug2'],
+                'interaction_description' => $interaction['interaction_description'] ?? 'N/A',
+                'interaction_severity' => $interaction['interaction_severity'] ?? 'Unknown'
+            ];
         }
 
         echo json_encode(['results' => $results]);
@@ -116,7 +117,7 @@ else {
     exit;
 }
 
-// 🟡 **4. Fetch Drug Data from OpenFDA API (Optional, if needed later)**
+// 🟡 **4. Fetch Drug Data from OpenFDA API (Optional)**
 function fetchFromOpenFDA($url) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

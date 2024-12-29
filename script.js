@@ -6,20 +6,31 @@ const checkInteractionsButton = document.getElementById("check-interactions");
 const resultsContainer = document.getElementById("results");
 const loadingIndicator = document.getElementById("loading");
 
-// 🎯 State
+// 🎯 State Management
 let selectedDrugs = []; // Array to store selected drugs
+let debounceTimeout = null; // For debouncing search queries
 
-// 🟢 Real-Time Drug Suggestions
-drugSearch.addEventListener("input", async () => {
+// 🟢 Real-Time Drug Suggestions with Debouncing
+drugSearch.addEventListener("input", () => {
 	const query = drugSearch.value.trim();
 
-	// Show suggestions only if query length > 1
+	// Clear previous timeout to prevent unnecessary API calls
+	clearTimeout(debounceTimeout);
+
 	if (query.length < 2) {
 		suggestionsContainer.classList.add("hidden");
 		suggestionsContainer.innerHTML = "";
 		return;
 	}
 
+	// Debounce the API call
+	debounceTimeout = setTimeout(async () => {
+		await fetchSuggestions(query);
+	}, 300); // 300ms debounce delay
+});
+
+// 🟢 Fetch Suggestions from Backend
+async function fetchSuggestions(query) {
 	try {
 		const response = await fetch("server.php", {
 			method: "POST",
@@ -37,21 +48,26 @@ drugSearch.addEventListener("input", async () => {
 			throw new Error(data.error);
 		}
 
-		// Display suggestions
+		// Display Suggestions
 		suggestionsContainer.innerHTML = "";
-		data.suggestions.forEach((drug) => {
-			const item = document.createElement("div");
-			item.classList.add("suggestion-item");
-			item.textContent = drug;
-			item.addEventListener("click", () => addDrug(drug));
-			suggestionsContainer.appendChild(item);
-		});
+		if (data.suggestions.length === 0) {
+			suggestionsContainer.innerHTML = `<div class="suggestion-item text-gray-500">No results found</div>`;
+		} else {
+			data.suggestions.forEach((drug) => {
+				const item = document.createElement("div");
+				item.classList.add("suggestion-item", "cursor-pointer", "hover:bg-blue-100", "p-2");
+				item.textContent = drug;
+				item.addEventListener("click", () => addDrug(drug));
+				suggestionsContainer.appendChild(item);
+			});
+		}
 
 		suggestionsContainer.classList.remove("hidden");
 	} catch (error) {
 		console.error("Suggestion Error:", error);
+		suggestionsContainer.innerHTML = `<div class="suggestion-item text-red-500">Error fetching suggestions</div>`;
 	}
-});
+}
 
 // 🟢 Add Drug to Selected List
 function addDrug(drug) {
@@ -73,6 +89,7 @@ function removeDrug(drug) {
 // 🟢 Render Selected Drugs as Bubbles
 function renderSelectedDrugs() {
 	selectedDrugsContainer.innerHTML = "";
+
 	selectedDrugs.forEach((drug) => {
 		const bubble = document.createElement("div");
 		bubble.classList.add(
@@ -83,7 +100,8 @@ function renderSelectedDrugs() {
 			"rounded-full",
 			"px-3",
 			"py-1",
-			"m-1"
+			"m-1",
+			"text-sm"
 		);
 		bubble.innerHTML = `
             <span>${drug}</span>
@@ -128,7 +146,7 @@ checkInteractionsButton.addEventListener("click", async () => {
 	}
 });
 
-// 🟢 Display Results
+// 🟢 Display Interaction Results
 function displayResults(results) {
 	resultsContainer.innerHTML = "";
 
@@ -146,8 +164,8 @@ function displayResults(results) {
 			"shadow-md",
 			"rounded-md",
 			"mb-4",
-			"border",
-			"hover:shadow-lg"
+			"border-l-4",
+			"border-blue-500"
 		);
 
 		card.innerHTML = `
@@ -160,7 +178,7 @@ function displayResults(results) {
 	});
 }
 
-// 🟢 Display Error
+// 🟢 Display Error Message
 function displayError(message) {
 	resultsContainer.innerHTML = `
 		<p class="text-red-500 text-center">${message}</p>`;
