@@ -7,7 +7,45 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <style>
-        /* Additional custom styles */
+        /* Custom Styles */
+        .suggestions {
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .suggestion-item {
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .suggestion-item:hover {
+            background: #f1f1f1;
+        }
+
+        .bubble {
+            display: inline-flex;
+            align-items: center;
+            background: #e2f3ff;
+            border-radius: 9999px;
+            padding: 4px 8px;
+            margin: 4px;
+            font-size: 14px;
+        }
+
+        .bubble button {
+            margin-left: 8px;
+            background: none;
+            border: none;
+            color: red;
+            cursor: pointer;
+        }
+
         .scrollable-results {
             max-height: 400px;
             overflow-y: auto;
@@ -26,23 +64,30 @@
 
     <!-- Main Content -->
     <main class="max-w-4xl w-full px-4 md:px-6 py-6 bg-white shadow-lg rounded-lg">
-        
+
         <!-- Input Section -->
         <section>
-            <h2 class="text-2xl font-bold mb-4 text-gray-700">Check Drug Interactions</h2>
-            <form id="drug-form" class="space-y-4">
-                <label for="drugs" class="block text-lg font-medium text-gray-700">
-                    Enter 1 to 5 Drug Names (comma-separated):
+            <h2 class="text-2xl font-bold mb-4 text-gray-700">Search and Add Drugs</h2>
+            
+            <!-- Drug Search Input with Suggestions -->
+            <div class="relative">
+                <label for="drug-search" class="block text-lg font-medium text-gray-700 mb-2">
+                    Search and Add Drugs:
                 </label>
-                <textarea id="drugs" rows="3" 
-                          class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="e.g., aspirin, ibuprofen, paracetamol"></textarea>
-                <button type="button" id="submit-button"
-                        class="w-full bg-blue-500 text-white py-3 rounded-md hover:bg-blue-600 transition-colors">
-                    <span class="material-icons align-middle">search</span> Check Interactions
-                </button>
-            </form>
-            <p id="input-error" class="text-red-500 text-sm mt-2 hidden">⚠️ Please enter valid drug names (1 to 5).</p>
+                <input type="text" id="drug-search"
+                       class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                       placeholder="Type a drug name...">
+                <div id="suggestions" class="suggestions hidden"></div>
+            </div>
+
+            <!-- Selected Drugs Display -->
+            <div id="selected-drugs" class="mt-4 flex flex-wrap"></div>
+            
+            <!-- Check Interactions Button -->
+            <button id="check-interactions"
+                    class="w-full bg-blue-500 text-white py-3 mt-4 rounded-md hover:bg-blue-600 transition-colors">
+                <span class="material-icons align-middle">search</span> Check Interactions
+            </button>
         </section>
 
         <!-- Loading State -->

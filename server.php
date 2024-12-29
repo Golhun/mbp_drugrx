@@ -12,7 +12,7 @@ if (!isset($_SESSION['last_request_time'])) {
     $_SESSION['last_request_time'] = time();
 } else {
     $time_diff = time() - $_SESSION['last_request_time'];
-    if ($time_diff < 2) {
+    if ($time_diff < 1) { // Limit to 1 request per second
         echo json_encode(['error' => 'Too many requests. Please wait before retrying.']);
         exit;
     }
@@ -21,63 +21,102 @@ if (!isset($_SESSION['last_request_time'])) {
 
 // 📝 Parse JSON Input
 $request = json_decode(file_get_contents('php://input'), true);
-if (!$request || !isset($request['drugs'])) {
+if (!$request || !isset($request['type'])) {
     echo json_encode(['error' => 'Invalid or malformed JSON request.']);
     exit;
 }
 
-// 🟢 Validate Input
-$drugs = array_filter(array_map('trim', explode(',', htmlspecialchars($request['drugs']))));
-if (count($drugs) < 1 || count($drugs) > 5) {
-    echo json_encode(['error' => 'Please enter between 1 and 5 valid drug names.']);
+// 🚀 Database Connection
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "mbp_drugrx";
+
+try {
+    $pdo = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    logError('Database Connection Failed: ' . $e->getMessage());
+    echo json_encode(['error' => 'Failed to connect to the database.']);
     exit;
 }
 
-// 🟢 Fetch Data from OpenFDA
-try {
-    $results = getDrugInfoFromOpenFDA($drugs);
-    echo json_encode(['results' => $results]);
-} catch (Exception $e) {
-    logError($e->getMessage());
-    echo json_encode(['error' => 'Failed to fetch drug data from OpenFDA.']);
-}
+// 🟢 Handle Different Request Types
+$type = $request['type'];
 
-// 🟡 Function: Fetch Drug Info
-function getDrugInfoFromOpenFDA($drugs) {
-    $results = [];
+// 🟡 **1. Drug Suggestions Endpoint**
+if ($type === 'suggestions') {
+    $query = trim($request['query'] ?? '');
 
-    foreach ($drugs as $drug) {
-        $labelUrl = "https://api.fda.gov/drug/label.json?search=openfda.brand_name:\"$drug\"&limit=1";
-
-        try {
-            $labelData = fetchFromOpenFDA($labelUrl);
-            $warnings = $labelData['warnings'][0] ?? 'No warnings available';
-            $interactions = $labelData['drug_interactions'][0] ?? 'No interaction data available';
-            $indications = $labelData['indications_and_usage'] ?? 'No indications available';
-            $purpose = $labelData['purpose'] ?? 'No purpose available';
-            $description = $labelData['description'] ?? 'No description available';
-
-            $results[] = [
-                'drug' => $drug,
-                'warnings' => $warnings,
-                'interactions' => $interactions,
-                'indications_and_usage' => $indications,
-                'purpose' => $purpose,
-                'description' => $description,
-            ];
-        } catch (Exception $e) {
-            $results[] = [
-                'drug' => $drug,
-                'error' => 'Failed to fetch data from OpenFDA API: ' . $e->getMessage()
-            ];
-            logError("Failed to fetch data for $drug: " . $e->getMessage());
-        }
+    if (empty($query) || strlen($query) < 2) {
+        echo json_encode(['error' => 'Invalid or too short query.']);
+        exit;
     }
 
-    return $results;
+    try {
+        $stmt = $pdo->prepare("SELECT DISTINCT drug1 FROM drug_interactions WHERE drug1 LIKE :query LIMIT 5");
+        $stmt->execute(['query' => "%$query%"]);
+        $suggestions = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        echo json_encode(['suggestions' => $suggestions]);
+    } catch (PDOException $e) {
+        logError('Suggestion Fetch Failed: ' . $e->getMessage());
+        echo json_encode(['error' => 'Failed to fetch suggestions.']);
+    }
+    exit;
 }
 
-// 🟡 Function: Fetch from OpenFDA API
+// 🟡 **2. Drug Interaction Lookup**
+elseif ($type === 'interactions') {
+    $drugs = $request['drugs'] ?? [];
+    if (!is_array($drugs) || count($drugs) < 1 || count($drugs) > 5) {
+        echo json_encode(['error' => 'Please enter between 1 and 5 valid drug names.']);
+        exit;
+    }
+
+    $results = [];
+    try {
+        for ($i = 0; $i < count($drugs); $i++) {
+            for ($j = $i + 1; $j < count($drugs); $j++) {
+                $drug1 = htmlspecialchars(trim($drugs[$i]));
+                $drug2 = htmlspecialchars(trim($drugs[$j]));
+
+                $stmt = $pdo->prepare("
+                    SELECT interaction_description, interaction_severity 
+                    FROM drug_interactions 
+                    WHERE (drug1 = :drug1 AND drug2 = :drug2) 
+                       OR (drug1 = :drug2 AND drug2 = :drug1)
+                ");
+                $stmt->execute(['drug1' => $drug1, 'drug2' => $drug2]);
+
+                $interaction = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if ($interaction) {
+                    $results[] = [
+                        'drug1' => $drug1,
+                        'drug2' => $drug2,
+                        'interaction_description' => $interaction['interaction_description'],
+                        'interaction_severity' => $interaction['interaction_severity']
+                    ];
+                }
+            }
+        }
+
+        echo json_encode(['results' => $results]);
+    } catch (PDOException $e) {
+        logError('Interaction Lookup Failed: ' . $e->getMessage());
+        echo json_encode(['error' => 'Failed to fetch drug interactions.']);
+    }
+    exit;
+}
+
+// 🟡 **3. Default Case for Unknown Type**
+else {
+    echo json_encode(['error' => 'Invalid request type.']);
+    exit;
+}
+
+// 🟡 **4. Fetch Drug Data from OpenFDA API (Optional, if needed later)**
 function fetchFromOpenFDA($url) {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -101,7 +140,7 @@ function fetchFromOpenFDA($url) {
     return $json['results'][0];
 }
 
-// 🟡 Function: Log Errors
+// 🛡️ **5. Error Logging**
 function logError($message) {
     $logFile = __DIR__ . '/error.log';
     $error = "[" . date('Y-m-d H:i:s') . "] Error: $message\n";
