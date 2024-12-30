@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <style>
-        /* Fallback styles only where Tailwind lacks coverage */
+        /* Suggestions Dropdown */
         .suggestions {
             max-height: 250px;
         }
@@ -15,23 +15,22 @@
 </head>
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col items-center py-6">
 
-    <!-- Header Section -->
-    <header class="w-full bg-blue-600 text-white shadow-md py-4 mb-6">
+    <!-- 🟦 Header Section -->
+    <header class="w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-md py-4 mb-6">
         <h1 class="text-center text-3xl font-bold flex items-center justify-center gap-2">
             <span class="material-icons">medication</span>
             Drug Interaction Checker
         </h1>
     </header>
 
-    <!-- Main Content -->
-    <main class="max-w-4xl w-full px-4 md:px-6 py-6 bg-white shadow-lg rounded-lg">
-
-        <!-- Search Section -->
-        <section>
+    <!-- 🟩 Main Content Section -->
+    <main class="max-w-4xl w-full px-6 py-8 bg-white shadow-lg rounded-lg">
+        
+        <!-- 🔍 Search & Selection Section -->
+        <section class="mb-8">
             <h2 class="text-2xl font-bold mb-4 text-gray-700">Search and Add Drugs</h2>
             
-            <!-- Drug Search Input with Suggestions -->
-            <div class="relative">
+            <div class="relative mb-4">
                 <label for="drug-search" class="block text-lg font-medium text-gray-700 mb-2">
                     Search and Add Drugs:
                 </label>
@@ -44,16 +43,16 @@
             </div>
 
             <!-- Selected Drugs Display -->
-            <div id="selected-drugs" class="mt-4 flex flex-wrap gap-2"></div>
+            <div id="selected-drugs" class="flex flex-wrap gap-2 mb-4"></div>
             
             <!-- Check Interactions Button -->
             <button id="check-interactions"
-                    class="w-full bg-blue-500 text-white py-3 mt-4 rounded-md hover:bg-blue-600 transition-colors">
+                    class="w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white py-3 rounded-md hover:from-blue-600 hover:to-blue-800 transition-transform transform hover:scale-105">
                 <span class="material-icons align-middle">search</span> Check Interactions
             </button>
         </section>
 
-        <!-- Loading State -->
+        <!-- ⏳ Loading State -->
         <section id="loading" class="hidden mt-6">
             <div class="flex justify-center items-center space-x-2">
                 <div class="h-6 w-6 rounded-full bg-blue-400 animate-ping"></div>
@@ -63,25 +62,37 @@
             <p class="text-center text-gray-600 mt-2">Fetching interactions... Please wait.</p>
         </section>
 
-        <!-- Results Section -->
-        <section id="results" class="mt-6 space-y-4 overflow-y-auto max-h-96">
-            <p class="text-center text-gray-600">Your results will appear here.</p>
+        <!-- 📊 Results Section -->
+        <section id="results" class="mt-6 space-y-6 overflow-y-auto max-h-96 border-t border-gray-200 pt-4">
+            <h2 class="text-lg font-bold text-gray-700">Results</h2>
+            
+            <!-- Database Results -->
+            <div id="db-results" class="space-y-4">
+                <h3 class="text-md font-semibold text-green-600">📊 Database Results</h3>
+                <p class="text-gray-500 italic">Interactions found in our database will appear here.</p>
+            </div>
+
+            <!-- API Results -->
+            <div id="api-results" class="space-y-4">
+                <h3 class="text-md font-semibold text-blue-600">🌐 API Results</h3>
+                <p class="text-gray-500 italic">Interactions fetched from OpenFDA API will appear here.</p>
+            </div>
+        </section>
+
+        <!-- 🛑 Empty State -->
+        <section id="empty-state" class="hidden mt-12 text-center">
+            <img src="https://via.placeholder.com/200" alt="No Results" class="mx-auto mb-4">
+            <h3 class="text-xl font-semibold text-gray-700">No Results Found</h3>
+            <p class="text-gray-600">Try entering different drug names or check your spelling.</p>
         </section>
     </main>
 
-    <!-- Empty State -->
-    <section id="empty-state" class="hidden mt-12 text-center">
-        <img src="https://via.placeholder.com/200" alt="No Results" class="mx-auto mb-4">
-        <h3 class="text-xl font-semibold text-gray-700">No Results Found</h3>
-        <p class="text-gray-600">Try entering different drug names or check your spelling.</p>
-    </section>
-
-    <!-- Footer Section -->
+    <!-- 🟫 Footer Section -->
     <footer class="w-full mt-auto text-center py-4 bg-gray-100 text-gray-500 text-sm">
         &copy; <?php echo date("Y"); ?> Drug Interaction Checker. All rights reserved.
     </footer>
 
-    <!-- JavaScript File -->
+    <!-- 🟨 JavaScript File -->
     <script src="script.js"></script>
 </body>
 </html>

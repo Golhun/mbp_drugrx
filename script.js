@@ -7,7 +7,7 @@ const resultsContainer = document.getElementById("results");
 const loadingIndicator = document.getElementById("loading");
 
 // 🎯 State Management
-let selectedDrugs = []; // Array to store selected drugs
+let selectedDrugs = []; // Stores selected drugs
 let debounceTimeout = null; // For debouncing search queries
 
 // 🟢 Real-Time Drug Suggestions with Debouncing
@@ -23,7 +23,7 @@ drugSearch.addEventListener("input", () => {
 		return;
 	}
 
-	// Debounce the API call
+	// Debounce API call
 	debounceTimeout = setTimeout(async () => {
 		await fetchSuggestions(query);
 	}, 300); // 300ms debounce delay
@@ -51,11 +51,16 @@ async function fetchSuggestions(query) {
 		// Display Suggestions
 		suggestionsContainer.innerHTML = "";
 		if (data.suggestions.length === 0) {
-			suggestionsContainer.innerHTML = `<div class="suggestion-item text-gray-500">No results found</div>`;
+			suggestionsContainer.innerHTML = `<div class="suggestion-item text-gray-500 p-2">No results found</div>`;
 		} else {
 			data.suggestions.forEach((drug) => {
 				const item = document.createElement("div");
-				item.classList.add("suggestion-item", "cursor-pointer", "hover:bg-blue-100", "p-2");
+				item.classList.add(
+					"suggestion-item",
+					"cursor-pointer",
+					"hover:bg-blue-100",
+					"p-2"
+				);
 				item.textContent = drug;
 				item.addEventListener("click", () => addDrug(drug));
 				suggestionsContainer.appendChild(item);
@@ -65,7 +70,7 @@ async function fetchSuggestions(query) {
 		suggestionsContainer.classList.remove("hidden");
 	} catch (error) {
 		console.error("Suggestion Error:", error);
-		suggestionsContainer.innerHTML = `<div class="suggestion-item text-red-500">Error fetching suggestions</div>`;
+		suggestionsContainer.innerHTML = `<div class="suggestion-item text-red-500 p-2">Error fetching suggestions</div>`;
 	}
 }
 
@@ -139,7 +144,7 @@ checkInteractionsButton.addEventListener("click", async () => {
 			throw new Error(data.error);
 		}
 
-		displayResults(data.results);
+		displayResults(data.db_results || [], data.api_results || []);
 	} catch (error) {
 		loadingIndicator.classList.add("hidden");
 		displayError(`Error: ${error.message}`);
@@ -147,46 +152,64 @@ checkInteractionsButton.addEventListener("click", async () => {
 });
 
 // 🟢 Display Interaction Results
-function displayResults(results) {
+function displayResults(dbResults, apiResults) {
 	resultsContainer.innerHTML = "";
 
-	if (results.length === 0) {
-		resultsContainer.innerHTML = `
-			<p class="text-gray-600 text-center">No interactions found for the selected drugs.</p>`;
-		return;
+	// 🟢 Database Results
+	if (dbResults.length > 0) {
+		resultsContainer.innerHTML += `<h2 class="text-lg font-bold text-gray-700 mt-4">📊 Database Results</h2>`;
+		dbResults.forEach((result) => {
+			const card = document.createElement("div");
+			card.classList.add(
+				"p-4",
+				"bg-white",
+				"shadow-md",
+				"rounded-md",
+				"mb-4",
+				"border-l-4",
+				"border-green-500"
+			);
+			card.innerHTML = `
+                <h3 class="text-lg font-bold text-blue-600 mb-2">${
+									result.drug1
+								} ↔ ${result.drug2}</h3>
+                <p class="text-gray-700"><strong>Interaction:</strong> ${
+									result.interaction_description || "N/A"
+								}</p>
+                <p class="text-gray-700"><strong>Severity:</strong> ${
+									result.interaction_severity || "Unknown"
+								}</p>
+            `;
+			resultsContainer.appendChild(card);
+		});
 	}
 
-	results.forEach((result) => {
-		const card = document.createElement("div");
-		card.classList.add(
-			"p-4",
-			"bg-white",
-			"shadow-md",
-			"rounded-md",
-			"mb-4",
-			"border-l-4",
-			"border-blue-500"
-		);
-
-		card.innerHTML = `
-            <h3 class="text-lg font-bold text-blue-600 mb-2">${result.drug1} ↔ ${result.drug2}</h3>
-            <p class="text-gray-700 mb-1"><strong>Interaction:</strong> ${result.interaction_description || "N/A"}</p>
-            <p class="text-gray-700 mb-1"><strong>Severity:</strong> ${result.interaction_severity || "Unknown"}</p>
-        `;
-
-		resultsContainer.appendChild(card);
-	});
+	// 🟢 API Results
+	if (apiResults.length > 0) {
+		resultsContainer.innerHTML += `<h2 class="text-lg font-bold text-gray-700 mt-4">🌐 API Results</h2>`;
+		apiResults.forEach((result) => {
+			const card = document.createElement("div");
+			card.classList.add(
+				"p-4",
+				"bg-white",
+				"shadow-md",
+				"rounded-md",
+				"mb-4",
+				"border-l-4",
+				"border-blue-500"
+			);
+			card.innerHTML = `
+                <h3 class="text-lg font-bold text-blue-600 mb-2">${
+									result.drug
+								}</h3>
+                <p><strong>Warnings:</strong> ${result.warnings || "N/A"}</p>
+            `;
+			resultsContainer.appendChild(card);
+		});
+	}
 }
 
 // 🟢 Display Error Message
 function displayError(message) {
-	resultsContainer.innerHTML = `
-		<p class="text-red-500 text-center">${message}</p>`;
-}
-
-// 🟢 Reset Search Input
-function resetSearch() {
-	drugSearch.value = "";
-	suggestionsContainer.innerHTML = "";
-	suggestionsContainer.classList.add("hidden");
+	resultsContainer.innerHTML = `<p class="text-red-500 text-center">${message}</p>`;
 }
