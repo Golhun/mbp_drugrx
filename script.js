@@ -38,15 +38,11 @@ async function fetchSuggestions(query) {
 			body: JSON.stringify({ type: "suggestions", query }),
 		});
 
-		if (!response.ok) {
-			throw new Error("Failed to fetch suggestions.");
-		}
+		if (!response.ok) throw new Error("Failed to fetch suggestions.");
 
 		const data = await response.json();
 
-		if (data.error) {
-			throw new Error(data.error);
-		}
+		if (data.error) throw new Error(data.error);
 
 		// Display Suggestions
 		suggestionsContainer.innerHTML = "";
@@ -133,16 +129,12 @@ checkInteractionsButton.addEventListener("click", async () => {
 			body: JSON.stringify({ type: "interactions", drugs: selectedDrugs }),
 		});
 
-		if (!response.ok) {
-			throw new Error("Failed to fetch interactions.");
-		}
+		if (!response.ok) throw new Error("Failed to fetch interactions.");
 
 		const data = await response.json();
 		loadingIndicator.classList.add("hidden");
 
-		if (data.error) {
-			throw new Error(data.error);
-		}
+		if (data.error) throw new Error(data.error);
 
 		displayResults(data.db_results || [], data.api_results || []);
 	} catch (error) {
@@ -156,57 +148,53 @@ function displayResults(dbResults, apiResults) {
 	resultsContainer.innerHTML = "";
 
 	// 🟢 Database Results
-	if (dbResults.length > 0) {
-		resultsContainer.innerHTML += `<h2 class="text-lg font-bold text-gray-700 mt-4">📊 Database Results</h2>`;
-		dbResults.forEach((result) => {
-			const card = document.createElement("div");
-			card.classList.add(
-				"p-4",
-				"bg-white",
-				"shadow-md",
-				"rounded-md",
-				"mb-4",
-				"border-l-4",
-				"border-green-500"
-			);
-			card.innerHTML = `
-                <h3 class="text-lg font-bold text-blue-600 mb-2">${
-									result.drug1
-								} ↔ ${result.drug2}</h3>
-                <p class="text-gray-700"><strong>Interaction:</strong> ${
-									result.interaction_description || "N/A"
-								}</p>
-                <p class="text-gray-700"><strong>Severity:</strong> ${
-									result.interaction_severity || "Unknown"
-								}</p>
-            `;
-			resultsContainer.appendChild(card);
-		});
-	}
+	dbResults.forEach((result) => {
+		resultsContainer.innerHTML += generateInteractionCard(
+			result.drug1,
+			result.drug2,
+			result.interaction_description,
+			result.interaction_severity,
+			apiResults
+		);
+	});
+}
 
-	// 🟢 API Results
-	if (apiResults.length > 0) {
-		resultsContainer.innerHTML += `<h2 class="text-lg font-bold text-gray-700 mt-4">🌐 API Results</h2>`;
-		apiResults.forEach((result) => {
-			const card = document.createElement("div");
-			card.classList.add(
-				"p-4",
-				"bg-white",
-				"shadow-md",
-				"rounded-md",
-				"mb-4",
-				"border-l-4",
-				"border-blue-500"
-			);
-			card.innerHTML = `
-                <h3 class="text-lg font-bold text-blue-600 mb-2">${
-									result.drug
-								}</h3>
-                <p><strong>Warnings:</strong> ${result.warnings || "N/A"}</p>
-            `;
-			resultsContainer.appendChild(card);
-		});
-	}
+// 🟢 Generate Interaction Card
+function generateInteractionCard(
+	drug1,
+	drug2,
+	description,
+	severity,
+	apiResults
+) {
+	const severityClass =
+		{
+			major: "bg-red-600",
+			moderate: "bg-yellow-500",
+			minor: "bg-green-500",
+		}[severity.toLowerCase()] || "bg-gray-500";
+
+	const apiDescriptions = apiResults
+		.map((api) => `<td class="p-2 border">${api.description}</td>`)
+		.join("");
+	const apiWarnings = apiResults
+		.map((api) => `<td class="p-2 border">${api.warnings}</td>`)
+		.join("");
+
+	return `
+    <div class="max-w-[1160px] mx-auto space-y-6 bg-white rounded-lg shadow-md border border-gray-200 p-4 md:p-6">
+        <h1 class="text-2xl md:text-4xl font-bold text-gray-900 mb-4">Interaction Info</h1>
+        <div class="flex items-center text-lg font-semibold gap-2">
+            <span>SEVERITY</span> | 
+            <span class="${severityClass} text-white text-sm px-3 py-1 rounded-full">${severity.toUpperCase()}</span>
+        </div>
+        <p class="text-gray-600">${description}</p>
+        <table class="w-full border text-sm mt-4">
+            <tr><th>${drug1}</th><th>${drug2}</th></tr>
+            <tr>${apiDescriptions}</tr>
+            <tr>${apiWarnings}</tr>
+        </table>
+    </div>`;
 }
 
 // 🟢 Display Error Message

@@ -62,21 +62,9 @@
             <p class="text-center text-gray-600 mt-2">Fetching interactions... Please wait.</p>
         </section>
 
-        <!-- 📊 Results Section -->
-        <section id="results" class="mt-6 space-y-6 overflow-y-auto max-h-96 border-t border-gray-200 pt-4">
-            <h2 class="text-lg font-bold text-gray-700">Results</h2>
-            
-            <!-- Database Results -->
-            <div id="db-results" class="space-y-4">
-                <h3 class="text-md font-semibold text-green-600">📊 Database Results</h3>
-                <p class="text-gray-500 italic">Interactions found in our database will appear here.</p>
-            </div>
-
-            <!-- API Results -->
-            <div id="api-results" class="space-y-4">
-                <h3 class="text-md font-semibold text-blue-600">🌐 API Results</h3>
-                <p class="text-gray-500 italic">Interactions fetched from OpenFDA API will appear here.</p>
-            </div>
+        <!-- 🟨 Results Section -->
+        <section id="results" class="mt-6 space-y-6">
+            <!-- Interaction Cards will be dynamically added here by JavaScript -->
         </section>
 
         <!-- 🛑 Empty State -->
