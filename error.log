@@ -143,3 +143,12 @@
 [2024-12-30 23:00:56] Error: OpenFDA Fetch Failed for Metaxalone: Invalid or empty response from OpenFDA.
 [2024-12-30 23:00:59] Error: OpenFDA Fetch Failed for Butabarbital: Invalid or empty response from OpenFDA.
 [2024-12-30 23:01:00] Error: OpenFDA Fetch Failed for Phenobarbital: Invalid or empty response from OpenFDA.
+[2024-12-30 23:33:51] Error: Executed query for Aceclofenac ↔ Acitretin, Found: 0
+[2024-12-30 23:33:52] Error: Executed query for Aceclofenac ↔ Tenofovir disoproxil, Found: 1
+[2024-12-30 23:33:52] Error: Executed query for Aceclofenac ↔ Betamethasone, Found: 1
+[2024-12-30 23:33:52] Error: Executed query for Acitretin ↔ Tenofovir disoproxil, Found: 0
+[2024-12-30 23:33:52] Error: Executed query for Acitretin ↔ Betamethasone, Found: 0
+[2024-12-30 23:33:52] Error: Executed query for Tenofovir disoproxil ↔ Betamethasone, Found: 0
+[2024-12-30 23:34:04] Error: OpenFDA Fetch Failed for Aceclofenac: Invalid or empty response from OpenFDA.
+[2024-12-30 23:34:06] Error: OpenFDA Fetch Failed for Acitretin: Invalid or empty response from OpenFDA.
+[2024-12-30 23:34:06] Error: OpenFDA Fetch Failed for Tenofovir disoproxil: cURL Error: URL rejected: Malformed input to a URL function

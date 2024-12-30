@@ -16,7 +16,7 @@
 <body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col items-center py-6">
 
     <!-- 🟦 Header Section -->
-    <header class="w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-md py-4 mb-6">
+    <header class="w-full text-black py-4 mb-6">
         <h1 class="text-center text-3xl font-bold flex items-center justify-center gap-2">
             <span class="material-icons">medication</span>
             Drug Interaction Checker
@@ -32,8 +32,7 @@
             
             <div class="relative mb-4">
                 <label for="drug-search" class="block text-lg font-medium text-gray-700 mb-2">
-                    Search and Add Drugs:
-                </label>
+
                 <input type="text" id="drug-search"
                        class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                        placeholder="Type a drug name...">
@@ -47,7 +46,7 @@
             
             <!-- Check Interactions Button -->
             <button id="check-interactions"
-                    class="w-full bg-gradient-to-r from-blue-500 to-blue-700 text-white py-3 rounded-md hover:from-blue-600 hover:to-blue-800 transition-transform transform hover:scale-105">
+                    class="w-full bg-gradient-to-r from-blue-900 to-blue-900 text-white py-3 rounded-md hover:from-blue-600 hover:to-blue-800 transition-transform transform hover:scale-102">
                 <span class="material-icons align-middle">search</span> Check Interactions
             </button>
         </section>
