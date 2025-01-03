@@ -1,4 +1,8 @@
 <?php
+require_once __DIR__ . '/vendor/autoload.php';
+
+use Dotenv\Dotenv;
+
 header('Content-Type: application/json');
 
 // 🛡️ Security Headers
@@ -19,21 +23,17 @@ if (!isset($_SESSION['last_request_time'])) {
     $_SESSION['last_request_time'] = time();
 }
 
-// 📝 Parse JSON Input
-$request = json_decode(file_get_contents('php://input'), true);
-if (!$request || !isset($request['type'])) {
-    echo json_encode(['error' => 'Invalid or malformed JSON request.']);
-    exit;
-}
+// Load Environment Variables
+$dotenv = Dotenv::createImmutable(__DIR__);
+$dotenv->load();
 
 // 🚀 Database Connection
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "mbp_drugrx";
-
 try {
-    $pdo = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
+    $pdo = new PDO(
+        "mysql:host=" . $_ENV['DB_HOST'] . ";dbname=" . $_ENV['DB_NAME'],
+        $_ENV['DB_USER'],
+        $_ENV['DB_PASS']
+    );
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
     logError('Database Connection Failed: ' . $e->getMessage());
@@ -41,11 +41,29 @@ try {
     exit;
 }
 
-// 🟢 Handle Different Request Types
+// 📝 Parse JSON Input
+$request = json_decode(file_get_contents('php://input'), true);
+if (!$request || !isset($request['type'])) {
+    echo json_encode(['error' => 'Invalid or malformed JSON request.']);
+    exit;
+}
+
 $type = $request['type'];
 
-// 🟡 **1. Drug Suggestions Endpoint**
+// 🟢 Route Requests to Handlers
 if ($type === 'suggestions') {
+    handleSuggestions($pdo, $request);
+} elseif ($type === 'interactions') {
+    handleInteractions($pdo, $request);
+} elseif ($type === 'substitutes') {
+    handleSubstitutes($pdo, $request);
+} else {
+    echo json_encode(['error' => 'Invalid request type.']);
+    exit;
+}
+
+// 🟢 **Suggestions Handler**
+function handleSuggestions($pdo, $request) {
     $query = trim($request['query'] ?? '');
 
     if (empty($query) || strlen($query) < 2) {
@@ -69,22 +87,18 @@ if ($type === 'suggestions') {
         logError('Suggestion Fetch Failed: ' . $e->getMessage());
         echo json_encode(['error' => 'Failed to fetch suggestions.']);
     }
-    exit;
 }
 
-// 🟡 **2. Drug Interaction Lookup (Database + API)**
-elseif ($type === 'interactions') {
+// 🟢 **Interactions Handler**
+function handleInteractions($pdo, $request) {
     $drugs = $request['drugs'] ?? [];
     if (!is_array($drugs) || count($drugs) < 1 || count($drugs) > 5) {
         echo json_encode(['error' => 'Please enter between 1 and 5 valid drug names.']);
         exit;
     }
 
-    $dbResults = [];
-    $apiResults = [];
-
     try {
-        // 🟢 Database Lookup
+        $dbResults = [];
         foreach ($drugs as $index => $drug1) {
             for ($j = $index + 1; $j < count($drugs); $j++) {
                 $drug2 = $drugs[$j];
@@ -96,77 +110,53 @@ elseif ($type === 'interactions') {
                        OR (drug1 = :drug2 AND drug2 = :drug1)
                 ");
                 $stmt->execute(['drug1' => trim($drug1), 'drug2' => trim($drug2)]);
-
-                $interactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                logError("Executed query for $drug1 ↔ $drug2, Found: " . count($interactions));
-
-                foreach ($interactions as $interaction) {
-                    $dbResults[] = [
-                        'drug1' => $interaction['drug1'],
-                        'drug2' => $interaction['drug2'],
-                        'interaction_description' => $interaction['interaction_description'] ?? 'N/A',
-                        'interaction_severity' => $interaction['interaction_severity'] ?? 'Unknown'
-                    ];
-                }
+                $dbResults = array_merge($dbResults, $stmt->fetchAll(PDO::FETCH_ASSOC));
             }
         }
 
-        if (empty($dbResults)) {
-            logError("No database interactions found for selected drugs: " . implode(', ', $drugs));
-        }
-
-        // 🟢 API Lookup
-        foreach ($drugs as $drug) {
-            $url = "https://api.fda.gov/drug/label.json?search=active_ingredient:\"$drug\"&limit=1";
-            try {
-                $apiData = fetchFromOpenFDA($url);
-                $apiResults[] = [
-                    'drug' => $drug,
-                    'warnings' => $apiData['warnings'][0] ?? 'No warnings available',
-                    'interactions' => $apiData['drug_interactions'][0] ?? 'No interaction data available',
-                    'description' => $apiData['description'] ?? 'No description available'
-                ];
-            } catch (Exception $e) {
-                logError("OpenFDA Fetch Failed for $drug: " . $e->getMessage());
-            }
-        }
-
-        echo json_encode([
-            'db_results' => $dbResults,
-            'api_results' => $apiResults
-        ]);
+        echo json_encode(['db_results' => $dbResults]);
     } catch (PDOException $e) {
         logError('Interaction Lookup Failed: ' . $e->getMessage());
         echo json_encode(['error' => 'Failed to fetch drug interactions.']);
     }
-    exit;
 }
 
-// 🟡 **3. Fetch Data from OpenFDA API**
-function fetchFromOpenFDA($url) {
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+// 🟢 **Substitutes Handler**
+function handleSubstitutes($pdo, $request) {
+    $query = trim($request['query'] ?? '');
 
-    $response = curl_exec($ch);
-
-    if (curl_errno($ch)) {
-        throw new Exception('cURL Error: ' . curl_error($ch));
+    if (empty($query) || strlen($query) < 2) {
+        echo json_encode(['error' => 'Please enter at least 2 characters.']);
+        exit;
     }
 
-    curl_close($ch);
+    try {
+        $stmt = $pdo->prepare("
+            SELECT name, substitute0, substitute1, substitute2, substitute3, substitute4
+            FROM drug_sub
+            WHERE name LIKE :query
+            LIMIT 5
+        ");
+        $stmt->execute(['query' => "$query%"]);
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $json = json_decode($response, true);
-    if (!$json || !isset($json['results'][0])) {
-        throw new Exception('Invalid or empty response from OpenFDA.');
+        $substitutes = [];
+        foreach ($results as $row) {
+            foreach (range(0, 4) as $i) {
+                if (!empty($row["substitute$i"])) {
+                    $substitutes[] = $row["substitute$i"];
+                }
+            }
+        }
+
+        echo json_encode(['substitutes' => array_unique($substitutes)]);
+    } catch (PDOException $e) {
+        logError('Substitute Lookup Failed: ' . $e->getMessage());
+        echo json_encode(['error' => 'Failed to fetch substitutes.']);
     }
-
-    return $json['results'][0];
 }
 
-// 🛡️ **4. Error Logging**
+// 🛡️ **Error Logging**
 function logError($message) {
     $logFile = __DIR__ . '/error.log';
     $error = "[" . date('Y-m-d H:i:s') . "] Error: $message\n";
