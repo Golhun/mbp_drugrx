@@ -6,7 +6,7 @@
     <title>Drug Interaction Checker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-     <style>
+    <style>
         /* Smooth Transition Styles */
         #tab-content-container {
             transition: opacity 0.2s ease, transform 0.2s ease;
@@ -48,7 +48,7 @@
 
         <!-- Dynamic Tab Content -->
         <div id="tab-content-container">
-            <!-- Content dynamically loaded based on selected tab -->
+            <p class="text-gray-500 text-center">Loading...</p>
         </div>
     </main>
 

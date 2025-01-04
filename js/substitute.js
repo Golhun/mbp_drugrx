@@ -1,149 +1,151 @@
 export function initializeSubstituteSearch() {
-	// DOM Elements
-	const drugSearch = document.getElementById("substitute-search");
-	const suggestionsContainer = document.getElementById(
-		"substitute-suggestions"
-	);
-	const resultsContainer = document.getElementById("substitute-results");
-	const loadingIndicator = document.getElementById("loading");
+    const substituteSearch = document.getElementById("substitute-search");
+    const suggestionsContainer = document.getElementById("substitute-suggestions");
+    const selectedDrugsContainer = document.getElementById("selected-substitute-drugs");
+    const findSubstitutesButton = document.getElementById("find-substitutes");
+    const resultsContainer = document.getElementById("substitute-results");
 
-	let debounceTimeout = null;
+    let selectedDrugs = [];
+    let debounceTimeout = null;
 
-	// Event Listener for input in the search box
-	drugSearch.addEventListener("input", () => {
-		const query = drugSearch.value.trim();
-		clearTimeout(debounceTimeout);
+    substituteSearch.addEventListener("input", handleSearchInput);
+    findSubstitutesButton.addEventListener("click", handleFindSubstitutes);
 
-		if (query.length < 2) {
-			hideSuggestions();
-			return;
-		}
+    function handleSearchInput() {
+        const query = substituteSearch.value.trim();
+        clearTimeout(debounceTimeout);
 
-		debounceTimeout = setTimeout(() => fetchSuggestions(query), 300);
-	});
+        if (query.length < 2) {
+            hideSuggestions();
+            return;
+        }
 
-	/**
-	 * Handles the input event for the drug search box.
-	 */
-	function handleDrugSearchInput() {
-		const query = drugSearch.value.trim();
-		clearTimeout(debounceTimeout);
+        debounceTimeout = setTimeout(() => fetchSuggestions(query), 500);
+    }
 
-		if (query.length < 2) {
-			hideSuggestions();
-			return;
-		}
+    async function fetchSuggestions(query) {
+        try {
+            const response = await fetch("server.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ type: "substitutes", query }),
+            });
 
-		debounceTimeout = setTimeout(() => fetchSubstituteSuggestions(query), 300);
-	}
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
 
-	/**
-	 * Fetches substitute suggestions from the server.
-	 * @param {string} query
-	 */
-	async function fetchSubstituteSuggestions(query) {
-		try {
-			const response = await fetch("server.php", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ type: "substitutes", query }),
-			});
+            renderSuggestions(data.suggestions || []);
+        } catch (error) {
+            console.error("Error fetching substitute suggestions:", error.message);
+            renderSuggestions([], error.message);
+        }
+    }
 
-			const data = await response.json();
+    function renderSuggestions(suggestions, errorMessage = null) {
+        if (errorMessage) {
+            suggestionsContainer.innerHTML = `<div class="p-2 text-red-500">${errorMessage}</div>`;
+        } else if (suggestions.length === 0) {
+            suggestionsContainer.innerHTML = `<div class="p-2 text-gray-500">No results found</div>`;
+        } else {
+            suggestionsContainer.innerHTML = suggestions
+                .map(
+                    (suggestion) =>
+                        `<div class="suggestion-item p-2 cursor-pointer hover:bg-green-100">${suggestion}</div>`
+                )
+                .join("");
 
-			if (data.error) throw new Error(data.error);
+            suggestionsContainer.querySelectorAll(".suggestion-item").forEach((item) => {
+                item.addEventListener("click", () => addDrug(item.textContent));
+            });
+        }
 
-			renderSuggestions(data.substitutes || []);
-		} catch (error) {
-			console.error("Error fetching substitutes:", error);
-			renderSuggestions([], "Error fetching substitutes");
-		}
-	}
+        suggestionsContainer.classList.remove("hidden");
+    }
 
-	/**
-	 * Renders the list of substitute suggestions.
-	 * @param {string[]} substitutes
-	 * @param {string} [errorMessage]
-	 */
-	function renderSuggestions(substitutes, errorMessage = null) {
-		if (errorMessage) {
-			suggestionsContainer.innerHTML = `<div class="p-2 text-red-500">${errorMessage}</div>`;
-		} else if (substitutes.length === 0) {
-			suggestionsContainer.innerHTML = `<div class="p-2 text-gray-500">No substitutes found</div>`;
-		} else {
-			suggestionsContainer.innerHTML = substitutes
-				.map(
-					(substitute) => `
-                <div class="suggestion-item p-2 cursor-pointer hover:bg-green-100">${substitute}</div>
-            `
-				)
-				.join("");
+    function addDrug(drug) {
+        if (selectedDrugs.length >= 5) {
+            alert("You can only add up to 5 drugs.");
+            return;
+        }
 
-			document.querySelectorAll(".suggestion-item").forEach((item, index) => {
-				item.addEventListener("click", () =>
-					fetchSubstituteDetails(substitutes[index])
-				);
-			});
-		}
+        if (!selectedDrugs.includes(drug)) {
+            selectedDrugs.push(drug);
+            renderSelectedDrugs();
+        }
 
-		suggestionsContainer.classList.remove("hidden");
-	}
+        substituteSearch.value = "";
+        hideSuggestions();
+    }
 
-	/**
-	 * Fetches detailed information about a selected substitute.
-	 * @param {string} substitute
-	 */
-	async function fetchSubstituteDetails(substitute) {
-		hideSuggestions();
-		loadingIndicator.classList.remove("hidden");
-		resultsContainer.innerHTML = "";
+    function renderSelectedDrugs() {
+        selectedDrugsContainer.innerHTML = selectedDrugs
+            .map(
+                (drug) =>
+                    `<div class="bg-green-100 rounded-full px-3 py-1 m-1 text-sm flex items-center">
+                        ${drug}
+                        <button class="ml-2 text-red-500 hover:text-red-700" data-drug="${drug}">×</button>
+                    </div>`
+            )
+            .join("");
 
-		try {
-			const response = await fetch("server.php", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ type: "substitute-details", query: substitute }),
-			});
+        selectedDrugsContainer.querySelectorAll("button").forEach((button) => {
+            button.addEventListener("click", () => removeDrug(button.dataset.drug));
+        });
+    }
 
-			const data = await response.json();
+    function removeDrug(drug) {
+        selectedDrugs = selectedDrugs.filter((d) => d !== drug);
+        renderSelectedDrugs();
+    }
 
-			if (data.error) throw new Error(data.error);
+    async function handleFindSubstitutes() {
+        if (selectedDrugs.length === 0) {
+            alert("Please add at least one drug.");
+            return;
+        }
 
-			renderResults(data.substitutes || []);
-		} catch (error) {
-			console.error("Error fetching substitute details:", error);
-			resultsContainer.innerHTML = `<p class="text-red-500">Error fetching substitute details</p>`;
-		} finally {
-			loadingIndicator.classList.add("hidden");
-		}
-	}
+        resultsContainer.innerHTML = `<p class="text-gray-500 text-center">Loading...</p>`;
 
-	/**
-	 * Renders detailed results for the selected substitute.
-	 * @param {Object[]} substitutes
-	 */
-	function renderResults(substitutes) {
-		if (substitutes.length === 0) {
-			resultsContainer.innerHTML = `<p class="text-gray-500">No detailed information available for the selected substitute</p>`;
-		} else {
-			resultsContainer.innerHTML = substitutes
-				.map(
-					(substitute) => `
-                <div class="border p-4 mb-4 rounded-md bg-gray-50 shadow-md">
-                    <h3 class="font-bold text-lg text-green-800">Substitute: ${substitute}</h3>
-                    <p class="text-gray-600">This drug can be used as an alternative.</p>
-                </div>
-            `
-				)
-				.join("");
-		}
-	}
+        try {
+            const response = await fetch("server.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ type: "substitutes", selectedDrugs }),
+            });
 
-	/**
-	 * Hides the suggestions dropdown.
-	 */
-	function hideSuggestions() {
-		suggestionsContainer.classList.add("hidden");
-		suggestionsContainer.innerHTML = "";
-	}
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+
+            renderResults(data.details || []);
+        } catch (error) {
+            console.error("Error fetching substitutes:", error.message);
+            resultsContainer.innerHTML = `<p class="text-red-500">${error.message}</p>`;
+        }
+    }
+
+    function renderResults(results) {
+        if (results.length === 0) {
+            resultsContainer.innerHTML = `<p class="text-gray-500">No substitutes found</p>`;
+        } else {
+            resultsContainer.innerHTML = results
+                .map(
+                    (result) =>
+                        `<div class="p-4 bg-white border shadow-md rounded-lg">
+                            <h3 class="text-lg font-bold mb-2">${result.name}</h3>
+                            <p><strong>Substitutes:</strong> ${result.substitutes.join(", ")}</p>
+                            <p><strong>Chemical Class:</strong> ${result.chemical_class}</p>
+                            <p><strong>Therapeutic Class:</strong> ${result.therapeutic_class}</p>
+                            <p><strong>Action Class:</strong> ${result.action_class}</p>
+                            <p><strong>Side Effects:</strong> ${result.side_effects}</p>
+                            <p><strong>Uses:</strong> ${result.uses}</p>
+                        </div>`
+                )
+                .join("");
+        }
+    }
+
+    function hideSuggestions() {
+        suggestionsContainer.classList.add("hidden");
+        suggestionsContainer.innerHTML = "";
+    }
 }
