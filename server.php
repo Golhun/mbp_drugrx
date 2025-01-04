@@ -148,37 +148,78 @@ function handleInteractions($pdo, $request) {
 // Substitutes Handler
 function handleSubstitutes($pdo, $request) {
     $query = trim($request['query'] ?? '');
+    $selectedDrugs = $request['selectedDrugs'] ?? [];
 
-    if (empty($query) || strlen($query) < 2) {
-        sendResponse(['error' => 'Please enter at least 2 characters.']);
-        return;
-    }
-
-    try {
-        $stmt = $pdo->prepare("
-            SELECT name, substitute0, substitute1, substitute2, substitute3, substitute4
-            FROM drug_sub
-            WHERE name LIKE :query
-            LIMIT 5
-        ");
-        $stmt->execute(['query' => "%$query%"]);
-        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $substitutes = [];
-        foreach ($results as $row) {
-            foreach (range(0, 4) as $i) {
-                if (!empty($row["substitute$i"])) {
-                    $substitutes[] = $row["substitute$i"];
-                }
-            }
+    if (!empty($query)) { // Real-time suggestions
+        if (strlen($query) < 2) {
+            sendResponse(['error' => 'Please enter at least 2 characters.']);
+            return;
         }
 
-        sendResponse(['substitutes' => array_unique($substitutes)]);
-    } catch (PDOException $e) {
-        logError('Substitute Lookup Failed: ' . $e->getMessage());
-        sendResponse(['error' => 'Failed to fetch substitutes.']);
+        try {
+            $stmt = $pdo->prepare("
+                SELECT DISTINCT name 
+                FROM drug_sub
+                WHERE LOWER(name) LIKE CONCAT('%', LOWER(:query), '%')
+                LIMIT 10
+            ");
+            $stmt->execute(['query' => $query]);
+            $results = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+            sendResponse(['suggestions' => $results]);
+        } catch (PDOException $e) {
+            logError('Substitute Suggestions Fetch Failed: ' . $e->getMessage());
+            sendResponse(['error' => 'Failed to fetch suggestions.']);
+        }
+    } elseif (!empty($selectedDrugs)) { // Lookup substitutes for selected drugs
+        if (!is_array($selectedDrugs) || count($selectedDrugs) < 1 || count($selectedDrugs) > 10) {
+            sendResponse(['error' => 'Please select between 1 and 10 drugs.']);
+            return;
+        }
+
+        try {
+            $substituteResults = [];
+            foreach ($selectedDrugs as $drug) {
+                $stmt = $pdo->prepare("
+                    SELECT name, substitute0, substitute1, substitute2, substitute3, substitute4,
+                           chemical_class, therapeutic_class, action_class, side_effects, uses
+                    FROM drug_sub
+                    WHERE name = :name
+                ");
+                $stmt->execute(['name' => $drug]);
+                $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+                foreach ($results as $row) {
+                    $substitutes = [];
+                    foreach (range(0, 4) as $i) {
+                        if (!empty($row["substitute$i"])) {
+                            $substitutes[] = $row["substitute$i"];
+                        }
+                    }
+
+                    $substituteResults[] = [
+                        'name' => $row['name'],
+                        'substitutes' => array_unique($substitutes),
+                        'chemical_class' => $row['chemical_class'] ?? 'N/A',
+                        'therapeutic_class' => $row['therapeutic_class'] ?? 'N/A',
+                        'action_class' => $row['action_class'] ?? 'N/A',
+                        'side_effects' => $row['side_effects'] ?? 'N/A',
+                        'uses' => $row['uses'] ?? 'N/A',
+                    ];
+                }
+            }
+
+            sendResponse(['details' => $substituteResults]);
+        } catch (PDOException $e) {
+            logError('Substitute Lookup Failed: ' . $e->getMessage());
+            sendResponse(['error' => 'Failed to fetch substitutes.']);
+        }
+    } else {
+        sendResponse(['error' => 'Invalid request for substitutes.']);
     }
 }
+
+
 
 // Response Wrapper
 function sendResponse($data) {
