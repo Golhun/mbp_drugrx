@@ -1,3 +1,6 @@
+// Import appState
+import { appState } from "./script.js";
+
 export function initializeSubstituteSearch() {
 	const substituteSearch = document.getElementById("substitute-search");
 	const suggestionsContainer = document.getElementById(
@@ -9,7 +12,10 @@ export function initializeSubstituteSearch() {
 	const findSubstitutesButton = document.getElementById("find-substitutes");
 	const resultsContainer = document.getElementById("substitute-results");
 
-	let selectedDrugs = [];
+	// Restore state from global appState
+	renderSelectedDrugs();
+	renderResults(appState.substituteResults);
+
 	let debounceTimeout = null;
 
 	substituteSearch.addEventListener("input", handleSearchInput);
@@ -44,6 +50,7 @@ export function initializeSubstituteSearch() {
 			renderSuggestions([], error.message);
 		}
 	}
+
 	function renderSuggestions(suggestions, errorMessage = null) {
 		if (errorMessage) {
 			suggestionsContainer.innerHTML = `<div class="p-2 text-red-500">${errorMessage}</div>`;
@@ -68,13 +75,13 @@ export function initializeSubstituteSearch() {
 	}
 
 	function addDrug(drug) {
-		if (selectedDrugs.length >= 5) {
-			alert("You can only add up to 5 drugs.");
+		if (appState.substituteDrugs.length >= 10) {
+			alert("You can only add up to 10 drugs.");
 			return;
 		}
 
-		if (!selectedDrugs.includes(drug)) {
-			selectedDrugs.push(drug);
+		if (!appState.substituteDrugs.includes(drug)) {
+			appState.substituteDrugs.push(drug);
 			renderSelectedDrugs();
 		}
 
@@ -83,7 +90,7 @@ export function initializeSubstituteSearch() {
 	}
 
 	function renderSelectedDrugs() {
-		selectedDrugsContainer.innerHTML = selectedDrugs
+		selectedDrugsContainer.innerHTML = appState.substituteDrugs
 			.map(
 				(drug) =>
 					`<div class="bg-green-100 rounded-full px-3 py-1 m-1 text-sm flex items-center">
@@ -99,35 +106,40 @@ export function initializeSubstituteSearch() {
 	}
 
 	function removeDrug(drug) {
-		selectedDrugs = selectedDrugs.filter((d) => d !== drug);
+		appState.substituteDrugs = appState.substituteDrugs.filter(
+			(d) => d !== drug
+		);
 		renderSelectedDrugs();
 	}
 
-    async function handleFindSubstitutes() {
-        if (selectedDrugs.length === 0) {
-            alert("Please add at least one drug.");
-            return;
-        }
-    
-        resultsContainer.innerHTML = `<p class="text-gray-500 text-center">Loading...</p>`;
-    
-        try {
-            const response = await fetch("server.php", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ type: "substitutes", selectedDrugs }),
-            });
-    
-            const data = await response.json();
-            if (data.error) throw new Error(data.error);
-    
-            renderResults(data.details || []);
-        } catch (error) {
-            console.error("Error fetching substitutes:", error.message);
-            resultsContainer.innerHTML = `<p class="text-red-500">${error.message}</p>`;
-        }
-    }
-    
+	async function handleFindSubstitutes() {
+		if (appState.substituteDrugs.length === 0) {
+			alert("Please add at least one drug.");
+			return;
+		}
+
+		resultsContainer.innerHTML = `<p class="text-gray-500 text-center">Loading...</p>`;
+
+		try {
+			const response = await fetch("server.php", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					type: "substitutes",
+					selectedDrugs: appState.substituteDrugs,
+				}),
+			});
+
+			const data = await response.json();
+			if (data.error) throw new Error(data.error);
+
+			appState.substituteResults = data.details || [];
+			renderResults(appState.substituteResults);
+		} catch (error) {
+			console.error("Error fetching substitutes:", error.message);
+			resultsContainer.innerHTML = `<p class="text-red-500">${error.message}</p>`;
+		}
+	}
 
 	function renderResults(results) {
 		if (results.length === 0) {

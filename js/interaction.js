@@ -1,3 +1,6 @@
+// Import appState
+import { appState } from "./script.js";
+
 export function initializeInteractionSearch() {
 	const drugSearch = document.getElementById("interaction-search");
 	const suggestionsContainer = document.getElementById(
@@ -8,14 +11,16 @@ export function initializeInteractionSearch() {
 	const resultsContainer = document.getElementById("interaction-results");
 	const loadingIndicator = document.getElementById("loading");
 
-	let selectedDrugs = [];
 	let debounceTimeout = null;
+
+	// Restore state from global appState
+	renderSelectedDrugs();
+	renderResults(appState.interactionResults);
 
 	// Event Listeners
 	drugSearch.addEventListener("input", handleDrugSearchInput);
 	checkInteractionsButton.addEventListener("click", handleCheckInteractions);
 
-	// Handle drug search input with debounce
 	function handleDrugSearchInput() {
 		const query = drugSearch.value.trim();
 		clearTimeout(debounceTimeout);
@@ -25,13 +30,11 @@ export function initializeInteractionSearch() {
 			return;
 		}
 
-		debounceTimeout = setTimeout(() => fetchSuggestions(query), 500); // Increased debounce to 500ms
+		debounceTimeout = setTimeout(() => fetchSuggestions(query), 500);
 	}
 
-	// Fetch suggestions from the server
 	async function fetchSuggestions(query) {
 		try {
-			console.log("Fetching suggestions for query:", query); // Debugging log
 			const response = await fetch("server.php", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
@@ -43,12 +46,11 @@ export function initializeInteractionSearch() {
 
 			renderSuggestions(data.suggestions || []);
 		} catch (error) {
-			console.error("Error fetching suggestions:", error.message); // Improved logging
+			console.error("Error fetching suggestions:", error.message);
 			renderSuggestions([], error.message);
 		}
 	}
 
-	// Render suggestions in the dropdown
 	function renderSuggestions(suggestions, errorMessage = null) {
 		if (errorMessage) {
 			suggestionsContainer.innerHTML = `<div class="p-2 text-red-500">${errorMessage}</div>`;
@@ -72,15 +74,14 @@ export function initializeInteractionSearch() {
 		suggestionsContainer.classList.remove("hidden");
 	}
 
-	// Add a drug to the selected list
 	function addDrug(drug) {
-		if (selectedDrugs.length >= 5) {
-			alert("You can only add up to 5 drugs.");
+		if (appState.interactionDrugs.length >= 10) {
+			alert("You can only add up to 10 drugs.");
 			return;
 		}
 
-		if (!selectedDrugs.includes(drug)) {
-			selectedDrugs.push(drug);
+		if (!appState.interactionDrugs.includes(drug)) {
+			appState.interactionDrugs.push(drug);
 			renderSelectedDrugs();
 		}
 
@@ -88,9 +89,8 @@ export function initializeInteractionSearch() {
 		hideSuggestions();
 	}
 
-	// Render the selected drugs as bubbles
 	function renderSelectedDrugs() {
-		selectedDrugsContainer.innerHTML = selectedDrugs
+		selectedDrugsContainer.innerHTML = appState.interactionDrugs
 			.map(
 				(drug) =>
 					`<div class="bg-blue-100 rounded-full px-3 py-1 m-1 text-sm flex items-center">
@@ -105,22 +105,21 @@ export function initializeInteractionSearch() {
 		});
 	}
 
-	// Remove a drug from the selected list
 	function removeDrug(drug) {
-		selectedDrugs = selectedDrugs.filter((d) => d !== drug);
+		appState.interactionDrugs = appState.interactionDrugs.filter(
+			(d) => d !== drug
+		);
 		renderSelectedDrugs();
 	}
 
-	// Hide suggestions dropdown
 	function hideSuggestions() {
 		suggestionsContainer.classList.add("hidden");
 		suggestionsContainer.innerHTML = "";
 	}
 
-	// Handle drug interactions check request
 	async function handleCheckInteractions() {
-		if (selectedDrugs.length === 0) {
-			alert("Please add at least one drug.");
+		if (appState.interactionDrugs.length < 2) {
+			alert("Please add at least two drugs to check interactions.");
 			return;
 		}
 
@@ -128,17 +127,20 @@ export function initializeInteractionSearch() {
 		resultsContainer.innerHTML = "";
 
 		try {
-			console.log("Checking interactions for drugs:", selectedDrugs); // Debugging log
 			const response = await fetch("server.php", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ type: "interactions", drugs: selectedDrugs }),
+				body: JSON.stringify({
+					type: "interactions",
+					drugs: appState.interactionDrugs,
+				}),
 			});
 
 			const data = await response.json();
 			if (data.error) throw new Error(data.error);
 
-			renderResults(data.db_results || []);
+			appState.interactionResults = data.db_results || [];
+			renderResults(appState.interactionResults);
 		} catch (error) {
 			console.error("Error fetching interactions:", error.message);
 			resultsContainer.innerHTML = `<p class="text-red-500">${error.message}</p>`;
@@ -147,7 +149,6 @@ export function initializeInteractionSearch() {
 		}
 	}
 
-	// Render the results of drug interactions
 	function renderResults(results) {
 		if (results.length === 0) {
 			resultsContainer.innerHTML = `<p class="text-gray-500">No interactions found</p>`;
@@ -166,9 +167,7 @@ export function initializeInteractionSearch() {
 																: result.interaction_severity === "Moderate"
 																? "bg-yellow-500 text-black"
 																: "bg-green-500 text-white"
-														}">
-                                ${result.interaction_severity}
-                            </span>
+														}">${result.interaction_severity}</span>
                         </div>`
 				)
 				.join("");
