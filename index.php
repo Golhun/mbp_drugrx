@@ -1,3 +1,38 @@
+<?php
+// Include the configuration and session
+require_once 'config.php';
+session_start();
+
+// Check if the user is authenticated
+if (!isset($_SESSION['user_id'])) {
+    // Handle "Remember Me" functionality
+    if (isset($_COOKIE['remember_me'])) {
+        $token = $_COOKIE['remember_me'];
+        $stmt = $db->prepare("SELECT user_id FROM remember_me WHERE token_hash = :token_hash AND expires_at > NOW()");
+        $stmt->execute(['token_hash' => hash('sha256', $token)]);
+        $user = $stmt->fetch();
+
+        if ($user) {
+            // Log the user in
+            $_SESSION['user_id'] = $user['user_id'];
+        } else {
+            // Invalid or expired token
+            header('Location: login.php');
+            exit();
+        }
+    } else {
+        // Redirect to login page if no session or valid cookie
+        header('Location: login.php');
+        exit();
+    }
+}
+
+// Fetch user information (optional)
+$stmt = $db->prepare("SELECT email FROM users WHERE id = :id");
+$stmt->execute(['id' => $_SESSION['user_id']]);
+$user = $stmt->fetch();
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,6 +62,8 @@
             <span class="material-icons">medication</span>
             Drug Checker
         </h1>
+        <p class="text-sm text-gray-600">Welcome, <?php echo htmlspecialchars($user['email']); ?>!</p>
+        <a href="logout.php" class="text-blue-500 hover:text-blue-700 text-sm">Logout</a>
     </header>
 
     <!-- Main Content Section -->
