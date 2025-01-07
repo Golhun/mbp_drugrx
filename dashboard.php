@@ -56,6 +56,8 @@ include 'components/dashboard_navbar.php';
 
   <!-- Load your dashboard logic for partials/tab switching, etc. -->
     <!-- Load scripts in the correct order (NO "type=module") -->
+    <script src="js/bubbleInfo.js"></script>
+    
     <script src="js/dashboardNav.js"></script>
   <!-- 1) Global state + restore functions -->
   <script src="js/script.js"></script>

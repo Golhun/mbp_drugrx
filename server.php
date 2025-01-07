@@ -16,10 +16,10 @@ if (!isset($_SESSION['last_request_time'])) {
     $_SESSION['last_request_time'] = microtime(true);
 } else {
     $time_diff = microtime(true) - $_SESSION['last_request_time'];
-    if ($time_diff < 0.5) {
-        sendResponse(['error' => 'Too many requests. Please wait before retrying.']);
-        exit;
-    }
+    // if ($time_diff < 0.5) {
+    //     sendResponse(['error' => 'Too many requests. Please wait before retrying.']);
+    //     exit;
+    // }
     $_SESSION['last_request_time'] = microtime(true);
 }
 
@@ -60,6 +60,9 @@ switch ($type) {
         break;
     case 'substitutes':
         handleSubstitutes($pdo, $request);
+        break;
+    case 'druginfo': 
+        handleDrugInfo($pdo, $request);
         break;
     default:
         sendResponse(['error' => 'Invalid request type.']);
@@ -219,7 +222,40 @@ function handleSubstitutes($pdo, $request) {
     }
 }
 
+// Drug info check function
+function handleDrugInfo($pdo, $request) {
+    $drugName = trim($request['drugName'] ?? '');
+    if (!$drugName) {
+        sendResponse(['error' => 'No drugName provided.']);
+        return;
+    }
 
+    try {
+        // We search in the composition column, looking for partial match
+        $stmt = $pdo->prepare("
+            SELECT composition, uses, side_effects
+            FROM drug_info
+            WHERE composition LIKE CONCAT('%', :drugName, '%')
+            LIMIT 1
+        ");
+        $stmt->execute(['drugName' => $drugName]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($row) {
+            sendResponse([
+                'found' => true,
+                'composition' => $row['composition'],
+                'uses' => $row['uses'],
+                'side_effects' => $row['side_effects'],
+            ]);
+        } else {
+            sendResponse(['found' => false]);
+        }
+    } catch (PDOException $e) {
+        logError('Drug Info Lookup Failed: ' . $e->getMessage());
+        sendResponse(['error' => 'Failed to fetch drug info.']);
+    }
+}
 
 // Response Wrapper
 function sendResponse($data) {

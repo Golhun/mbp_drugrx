@@ -1,5 +1,4 @@
 // ./js/interaction.js
-// This file references the global "window.appState" set in script.js
 
 window.initializeInteractionSearch = function initializeInteractionSearch() {
 	const drugSearch = document.getElementById("interaction-search");
@@ -81,17 +80,28 @@ window.initializeInteractionSearch = function initializeInteractionSearch() {
 
 	function renderSelectedDrugs() {
 		selectedDrugsContainer.innerHTML = window.appState.interactionDrugs
-			.map(
-				(drug) => `
-			<div class="bg-blue-100 rounded-full px-3 py-1 m-1 text-sm flex items-center">
+			.map((drug) => {
+				return `
+			<div
+			  class="bg-blue-100 rounded-full px-3 py-1 m-1 text-sm flex items-center"
+			  data-drug-bubble
+			  data-drug-name="${drug}"
+			>
 			  ${drug}
 			  <button class="ml-2 text-red-500 hover:text-red-700" data-drug="${drug}">×</button>
-			</div>`
-			)
+			</div>
+		  `;
+			})
 			.join("");
+
 		selectedDrugsContainer.querySelectorAll("button").forEach((btn) => {
 			btn.addEventListener("click", () => removeDrug(btn.dataset.drug));
 		});
+
+		// After rendering new bubbles, attach bubble info
+		if (window.attachBubbleInfo) {
+			window.attachBubbleInfo("#selected-drugs");
+		}
 	}
 
 	function removeDrug(drug) {
