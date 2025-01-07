@@ -40,7 +40,7 @@ include 'components/dashboard_navbar.php';
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-white min-h-screen">
 
   <main class="pt-20 sm:ml-64 p-4 transition-all">
     <!-- Center the loaded partials in a container -->
