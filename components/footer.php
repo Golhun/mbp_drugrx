@@ -70,7 +70,7 @@ function renderFooter() {
                     <form action="#" method="POST" class="mt-6">
                         <div>
                             <label for="email" class="sr-only">Email</label>
-                            <input type="email" name="email" id="email" placeholder="Enter your email"
+                            <input type="email" name="email" id="news_letter_email" placeholder="Enter your email"
                                    class="block w-full p-4 text-gray-900 placeholder-gray-500 bg-gray-100 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500" />
                         </div>
                         <button type="submit" class="inline-flex items-center justify-center px-6 py-4 mt-3 font-semibold text-white bg-pink-500 rounded-md hover:bg-pink-600 focus:bg-pink-600">
