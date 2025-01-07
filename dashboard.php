@@ -1,14 +1,31 @@
 
 <?php
-// dashboard.php
-
-session_start();
+// Include the configuration and session
 require_once 'config.php';
+session_start();
 
-// Check user authentication
+// Check if the user is authenticated
 if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
-    exit();
+    // Handle "Remember Me" functionality
+    if (isset($_COOKIE['remember_me'])) {
+        $token = $_COOKIE['remember_me'];
+        $stmt = $db->prepare("SELECT user_id FROM remember_me WHERE token_hash = :token_hash AND expires_at > NOW()");
+        $stmt->execute(['token_hash' => hash('sha256', $token)]);
+        $user = $stmt->fetch();
+
+        if ($user) {
+            // Log the user in
+            $_SESSION['user_id'] = $user['user_id'];
+        } else {
+            // Invalid or expired token
+            header('Location: login.php');
+            exit();
+        }
+    } else {
+        // Redirect to login page if no session or valid cookie
+        header('Location: login.php');
+        exit();
+    }
 }
 
 // Include the new navbar with your top bar + sidebar
