@@ -5,7 +5,7 @@ function renderFeaturesSection() {
         <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
             <div class="text-center">
                 <h2 class="text-3xl font-bold leading-tight text-gray-900 sm:text-4xl xl:text-5xl">Explore Key Features</h2>
-                <p class="mt-4 text-base leading-7 text-gray-600 sm:mt-8">Discover how MBP_DrugRx can simplify medication safety and interaction checks.</p>
+                <p class="mt-4 text-base leading-7 text-gray-600 sm:mt-8">Discover how mbp_drugrx can simplify medication safety and interaction checks.</p>
             </div>
 
             <div class="grid grid-cols-1 mt-10 text-center sm:mt-16 sm:grid-cols-2 sm:gap-x-12 gap-y-12 md:grid-cols-3 xl:mt-24">

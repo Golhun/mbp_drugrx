@@ -65,7 +65,7 @@ function renderDashboardNavbar() {
           <!-- Use the same capsule + pink accent from the landing page -->
           <i class="fas fa-capsules text-pink-500 text-3xl"></i>
           <span class="self-center text-xl font-bold text-white">
-            MBP_DrugRx
+            mbp_drugrx
           </span>
         </a>
       </div>

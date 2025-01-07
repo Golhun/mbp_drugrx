@@ -8,7 +8,7 @@ function renderFooter() {
                 <div class="col-span-2 md:col-span-3 lg:col-span-2 lg:pr-8">
                     <i class="fas fa-capsules fa-3x text-pink-500"></i>
                     <p class="text-base leading-relaxed text-gray-400 mt-7">
-                        MBP_DrugRx is your trusted solution for drug interaction and substitute checking. Safeguard your health and make informed decisions with ease.
+                        mbp_drugrx is your trusted solution for drug interaction and substitute checking. Safeguard your health and make informed decisions with ease.
                     </p>
 
                     <ul class="flex items-center space-x-3 mt-9">
@@ -82,7 +82,7 @@ function renderFooter() {
 
             <hr class="mt-16 mb-10 border-gray-700" />
 
-            <p class="text-sm text-center text-gray-500">© <?php echo date("Y"); ?> MBP_DrugRx. All Rights Reserved.</p>
+            <p class="text-sm text-center text-gray-500">© <?php echo date("Y"); ?> mbp_drugrx. All Rights Reserved.</p>
         </div>
     </footer>
     <?php

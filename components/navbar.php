@@ -6,7 +6,7 @@ function renderNavbar() {
             <!-- Logo -->
             <a href="landing.php" class="flex items-center space-x-2">
                 <i class="fas fa-capsules text-pink-500 text-3xl"></i>
-                <span class="text-xl font-bold text-white">MBP_DrugRx</span>
+                <span class="text-xl font-bold text-white">mbp_drugrx</span>
             </a>
 
             <!-- Navigation Links -->

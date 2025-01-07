@@ -35,11 +35,10 @@ include 'components/dashboard_navbar.php';
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Dashboard - MBP_DrugRx</title>
-  <!-- Tailwind CSS -->
+  <title>Dashboard - mbp_drugrx</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Font Awesome (if needed) -->
-  <script src="https://kit.fontawesome.com/YOUR-KIT.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 min-h-screen">
 

@@ -4,9 +4,9 @@ function renderHowItWorksSection() {
     <section class="py-10 bg-white sm:py-16 lg:py-24">
         <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
             <div class="max-w-2xl mx-auto text-center">
-                <h2 class="text-3xl font-bold leading-tight text-black sm:text-4xl lg:text-5xl">How Does MBP_DrugRx Work?</h2>
+                <h2 class="text-3xl font-bold leading-tight text-black sm:text-4xl lg:text-5xl">How Does mbp_drugrx Work?</h2>
                 <p class="max-w-lg mx-auto mt-4 text-base leading-relaxed text-gray-600">
-                    Using MBP_DrugRx is simple and effective. Follow these steps to ensure safe and informed medication decisions.
+                    Using mbp_drugrx is simple and effective. Follow these steps to ensure safe and informed medication decisions.
                 </p>
             </div>
 
@@ -23,7 +23,7 @@ function renderHowItWorksSection() {
                         </div>
                         <h3 class="mt-6 text-xl font-semibold leading-tight text-black md:mt-10">Enter Medications</h3>
                         <p class="mt-4 text-base text-gray-600">
-                            Input the drugs you are taking into the MBP_DrugRx system. Our platform handles the rest.
+                            Input the drugs you are taking into the mbp_drugrx system. Our platform handles the rest.
                         </p>
                     </div>
 

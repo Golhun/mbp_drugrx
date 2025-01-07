@@ -10,7 +10,7 @@ function renderHeroSection() {
                         Safeguard your health with
                         <span class="relative inline-flex sm:inline">
                             <span class="bg-gradient-to-r from-pink-400 via-red-500 to-pink-600 blur-lg filter opacity-30 w-full h-full absolute inset-0"></span>
-                            <span class="relative"> MBP_DrugRx </span>
+                            <span class="relative"> mbp_drugrx </span>
                         </span>
                     </p>
 
@@ -44,7 +44,7 @@ function renderHeroSection() {
                     <div class="absolute inset-0 h-2/3 bg-gray-50"></div>
                     <div class="relative mx-auto">
                         <div class="lg:max-w-6xl lg:mx-auto">
-                            <img class="transform scale-110" src="https://cdn.rareblocks.xyz/collection/clarity/images/hero/2/illustration.png" alt="MBP_DrugRx Illustration" />
+                            <img class="transform scale-110" src="https://cdn.rareblocks.xyz/collection/clarity/images/hero/2/illustration.png" alt="mbp_drugrx Illustration" />
                         </div>
                     </div>
                 </div>

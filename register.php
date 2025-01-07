@@ -9,7 +9,7 @@ session_start();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - MBP_DrugRx</title>
+    <title>Register - mbp_drugrx</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -28,7 +28,7 @@ session_start();
         <div class="container mx-auto px-6 sm:px-12">
             <div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6 sm:p-8">
                 <h2 class="text-2xl font-bold text-center text-gray-800">Create Your Account</h2>
-                <p class="text-center text-gray-600 mt-2">Sign up to access MBP_DrugRx</p>
+                <p class="text-center text-gray-600 mt-2">Sign up to access mbp_drugrx</p>
 
                 <?php if (isset($_SESSION['errors']) && !empty($_SESSION['errors'])): ?>
                     <div class="bg-red-100 text-red-700 p-4 rounded-md mb-6">
