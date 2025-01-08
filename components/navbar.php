@@ -17,6 +17,7 @@ function renderNavbar() {
                 <a href="landing.php" class="text-gray-300 hover:text-pink-500 transition">Features</a>
                 <a href="landing.php" class="text-gray-300 hover:text-pink-500 transition">How It Works</a>
                 <a href="landing.php" class="text-gray-300 hover:text-pink-500 transition">Contact</a>
+                <a href="blog.php" class="text-gray-300 hover:text-pink-500 transition">Blog</a>
                 <a href="login.php" class="text-gray-300 hover:text-pink-500 transition">Login</a>
                 <a href="register.php" class="bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-600 transition">
                     Register
@@ -36,6 +37,7 @@ function renderNavbar() {
             <a href="landing.php" class="block px-4 py-2 hover:bg-gray-700 hover:text-pink-500">Features</a>
             <a href="landing.php" class="block px-4 py-2 hover:bg-gray-700 hover:text-pink-500">How It Works</a>
             <a href="landing.php" class="block px-4 py-2 hover:bg-gray-700 hover:text-pink-500">Contact</a>
+            <a href="blog.php" class="block px-4 py-2 hover:bg-gray-700 hover:text-pink-500">Blog</a>
             <a href="login.php" class="block px-4 py-2 hover:bg-gray-700 hover:text-pink-500">Login</a>
             <a href="register.php" class="block px-4 py-2 bg-pink-500 text-white text-center rounded-md hover:bg-pink-600">
                 Register

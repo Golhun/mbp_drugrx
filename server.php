@@ -16,10 +16,10 @@ if (!isset($_SESSION['last_request_time'])) {
     $_SESSION['last_request_time'] = microtime(true);
 } else {
     $time_diff = microtime(true) - $_SESSION['last_request_time'];
-    // if ($time_diff < 0.5) {
-    //     sendResponse(['error' => 'Too many requests. Please wait before retrying.']);
-    //     exit;
-    // }
+    if ($time_diff < 0.1) {
+        sendResponse(['error' => 'Too many requests. Please wait before retrying.']);
+        exit;
+    }
     $_SESSION['last_request_time'] = microtime(true);
 }
 
@@ -63,6 +63,9 @@ switch ($type) {
         break;
     case 'druginfo': 
         handleDrugInfo($pdo, $request);
+        break;
+    case 'fetchRSSBatch':
+        handleFetchRssBatch();
         break;
     default:
         sendResponse(['error' => 'Invalid request type.']);
@@ -257,6 +260,25 @@ function handleDrugInfo($pdo, $request) {
     }
 }
 
+// Fetch RSS Feed
+function handleFetchRssBatch() {
+    $start = isset($_GET['start']) ? (int)$_GET['start'] : 0;
+    $count = isset($_GET['count']) ? (int)$_GET['count'] : 10;
+
+    // Example feed link from Drugs.com
+    $rssUrl = 'https://www.drugs.com/feeds/medical_news.xml';
+    
+    require_once 'rss_fetcher.php';
+    $total = fetchRssTotalCount($rssUrl);
+    $batch = fetchRssBatch($rssUrl, $start, $count);
+
+    sendResponse([
+        'items' => $batch,
+        'total' => $total
+    ]);
+}
+
+
 // Response Wrapper
 function sendResponse($data) {
     echo json_encode($data);
@@ -269,3 +291,4 @@ function logError($message) {
     $error = "[" . date('Y-m-d H:i:s') . "] Error: $message\n";
     file_put_contents($logFile, $error, FILE_APPEND);
 }
+

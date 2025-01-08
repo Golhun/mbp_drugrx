@@ -147,6 +147,18 @@ function renderDashboardNavbar() {
         </a>
       </li>
 
+      <!-- Blog link -->
+      <li>
+        <a href="#"
+           class="flex items-center p-2 text-gray-300 rounded-lg hover:bg-pink-500 hover:text-white
+                  transition group"
+           id="nav-blog"
+        >
+          <i class="fas fa-blog text-gray-400 group-hover:text-white"></i>
+          <span class="ms-3">Blog</span>
+        </a>
+      </li>
+
       <!-- Profile Link -->
       <li>
         <a href="#"

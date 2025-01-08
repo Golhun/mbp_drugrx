@@ -7,9 +7,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	const navDrugInfo = document.getElementById("nav-drug-info");
 	const navProfile = document.getElementById("nav-profile");
+	const navBlog = document.getElementById("nav-blog");
 
 	navDrugInfo.addEventListener("click", () => loadContent("index.php"));
 	navProfile.addEventListener("click", () => loadContent("profile.php"));
+	navBlog.addEventListener("click", () => loadContent("blog_page.php"));
 });
 
 /**
