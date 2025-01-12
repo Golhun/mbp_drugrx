@@ -10,9 +10,13 @@ function renderDashboardNavbar() {
     // Fetch user data
     global $db;
     try {
-        $stmt = $db->prepare("SELECT first_name, last_name, email FROM users WHERE id = :id");
+        $stmt = $db->prepare("
+            SELECT first_name, last_name, email 
+            FROM users 
+            WHERE id = :id
+        ");
         $stmt->execute([':id' => $_SESSION['user_id']]);
-        $user = $stmt->fetch();
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$user) {
             header('Location: login.php');
@@ -23,7 +27,7 @@ function renderDashboardNavbar() {
         $last_name  = $user['last_name'];
         $email      = $user['email'];
 
-        // For top-right avatar fallback
+        // For top-right avatar fallback or UI
         $user_initials = strtoupper(substr($first_name, 0, 1) . substr($last_name, 0, 1));
     } catch (PDOException $e) {
         error_log("Error fetching user details: " . $e->getMessage());
@@ -32,7 +36,7 @@ function renderDashboardNavbar() {
     }
     ?>
 
-<!-- TOP NAVBAR (Using the same color scheme from your landing page: bg-gray-900, pink-500 accents) -->
+<!-- Top Navbar (Using a dark background with pink highlights) -->
 <nav class="fixed top-0 z-50 w-full bg-gray-900 border-b border-gray-700">
   <div class="px-3 py-3 lg:px-5 lg:pl-3">
     <div class="flex items-center justify-between">
@@ -44,25 +48,27 @@ function renderDashboardNavbar() {
           data-drawer-toggle="logo-sidebar" 
           aria-controls="logo-sidebar"
           type="button" 
-          class="inline-flex items-center p-2 text-sm text-gray-300 rounded-lg sm:hidden hover:bg-gray-800
-                 focus:outline-none focus:ring-2 focus:ring-gray-600"
+          class="inline-flex items-center p-2 text-sm text-gray-300 rounded-lg sm:hidden 
+                 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-600"
         >
           <span class="sr-only">Open sidebar</span>
           <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-             <path clip-rule="evenodd" fill-rule="evenodd"
-               d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 
-                  010 1.5H2.75A.75.75 0 012 4.75zm0 
-                  10.5a.75.75 0 01.75-.75h7.5a.75.75 0
-                  010 1.5h-7.5a.75.75 0 
-                  01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0
-                  010 1.5H2.75A.75.75 0 012 10z"
-             ></path>
+            <path clip-rule="evenodd" fill-rule="evenodd"
+              d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0
+                 010 1.5H2.75A.75.75 0 012 4.75zm0
+                 10.5a.75.75 0 01.75-.75h7.5a.75.75 0
+                 010 1.5h-7.5a.75.75 0 
+                 01-.75-.75zM2 10a.75.75 0 
+                 01.75-.75h14.5a.75.75 0
+                 010 1.5H2.75A.75.75 0 
+                 012 10z"
+            ></path>
           </svg>
         </button>
 
         <!-- Brand / Logo -->
         <a href="#" class="flex ms-2 md:me-24 items-center gap-2">
-          <!-- Use the same capsule + pink accent from the landing page -->
+          <!-- Use a capsule + pink accent from your landing page -->
           <i class="fas fa-capsules text-pink-500 text-3xl"></i>
           <span class="self-center text-xl font-bold text-white">
             mbp_drugrx
@@ -76,11 +82,12 @@ function renderDashboardNavbar() {
           <!-- Avatar / Top-right user menu button -->
           <button 
             type="button"
-            class="user-menu-button flex text-sm bg-pink-500 hover:bg-pink-600 rounded-full focus:ring-2 focus:ring-pink-300
-                   transition-colors"
+            class="user-menu-button flex text-sm bg-pink-500 hover:bg-pink-600 rounded-full 
+                   focus:ring-2 focus:ring-pink-300 transition-colors"
             aria-expanded="false"
           >
             <span class="sr-only">Open user menu</span>
+            <!-- If user doesn't have a profile pic, fallback to initials or a placeholder -->
             <img 
               class="w-8 h-8 rounded-full object-cover"
               src="https://ui-avatars.com/api/?name=<?php echo urlencode($first_name . ' ' . $last_name); ?>&background=FF0090&color=fff&rounded=true" 
@@ -90,8 +97,8 @@ function renderDashboardNavbar() {
 
           <!-- The dropdown menu (hidden by default) -->
           <div 
-            class="user-menu-dropdown z-50 hidden my-4 text-base list-none bg-gray-800 divide-y divide-gray-700 rounded shadow 
-                   absolute top-12 right-0 w-44"
+            class="user-menu-dropdown z-50 hidden my-4 text-base list-none bg-gray-800 
+                   divide-y divide-gray-700 rounded shadow absolute top-12 right-0 w-44"
           >
             <!-- User info block -->
             <div class="px-4 py-3">
@@ -106,14 +113,16 @@ function renderDashboardNavbar() {
             <ul class="py-1">
               <li>
                 <a href="#"
-                   class="block px-4 py-2 text-sm text-gray-300 hover:bg-pink-500 hover:text-white transition"
+                   class="block px-4 py-2 text-sm text-gray-300 hover:bg-pink-500 hover:text-white 
+                          transition"
                 >
                   My Profile
                 </a>
               </li>
               <li>
                 <a href="logout.php"
-                   class="block px-4 py-2 text-sm text-gray-300 hover:bg-pink-500 hover:text-white transition"
+                   class="block px-4 py-2 text-sm text-gray-300 hover:bg-pink-500 hover:text-white 
+                          transition"
                 >
                   Sign out
                 </a>
@@ -126,7 +135,7 @@ function renderDashboardNavbar() {
   </div>
 </nav>
 
-<!-- SIDEBAR (Keep the same color scheme: dark background, pink highlights on hover) -->
+<!-- SIDEBAR (Dark background + pink highlight on hover) -->
 <aside 
   id="logo-sidebar"
   class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform -translate-x-full 
@@ -135,6 +144,18 @@ function renderDashboardNavbar() {
 >
   <div class="h-full px-3 pb-4 overflow-y-auto bg-gray-900">
     <ul class="space-y-2 font-medium">
+      <!-- Dashboard Link -->
+      <li>
+        <a href="#"
+           class="flex items-center p-2 text-gray-300 rounded-lg hover:bg-pink-500 hover:text-white
+                  transition group"
+           id="nav-dashboard"
+        >
+          <i class="fas fa-home text-gray-400 group-hover:text-white"></i>
+          <span class="ms-3">Dashboard</span>
+        </a>
+      </li>
+
       <!-- Drug Info Link -->
       <li>
         <a href="#"
@@ -147,7 +168,7 @@ function renderDashboardNavbar() {
         </a>
       </li>
 
-      <!-- Blog link -->
+      <!-- Blog Link -->
       <li>
         <a href="#"
            class="flex items-center p-2 text-gray-300 rounded-lg hover:bg-pink-500 hover:text-white
@@ -185,10 +206,8 @@ function renderDashboardNavbar() {
   </div>
 </aside>
 
-<!-- 
-  If you'd like to replicate the example fully, place your main content
-  in <div class="p-4 sm:ml-64 mt-14"> ... </div>, or wherever your content goes.
--->
 <?php
-} // end function
+} // end function renderDashboardNavbar()
+
+// Call the function to render the navbar
 renderDashboardNavbar();

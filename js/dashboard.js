@@ -1,21 +1,29 @@
 // ./js/dashboard.js
-// No imports. We'll rely on global window.initializeInteractionSearch, etc.
 
 document.addEventListener("DOMContentLoaded", () => {
-	// Default to loading "index.php" (Drug Info partial)
+	// By default, load "index.php" (Drug Info partial)
 	loadContent("index.php");
 
 	const navDrugInfo = document.getElementById("nav-drug-info");
 	const navProfile = document.getElementById("nav-profile");
 	const navBlog = document.getElementById("nav-blog");
 
+	// If you also have a "nav-dashboard" button in your sidebar:
+	const navDashboard = document.getElementById("nav-dashboard");
+
 	navDrugInfo.addEventListener("click", () => loadContent("index.php"));
 	navProfile.addEventListener("click", () => loadContent("profile.php"));
 	navBlog.addEventListener("click", () => loadContent("blog_page.php"));
+	if (navDashboard) {
+		navDashboard.addEventListener("click", () =>
+			loadContent("dashboard_page.php")
+		);
+	}
 });
 
 /**
- * Load a partial (index.php or profile.php) into #content-area, then init sub-tabs if needed
+ * Load a partial (index.php, profile.php, dashboard_page.php, etc.)
+ * into #content-area, then init sub-tabs if needed
  */
 function loadContent(url) {
 	const contentArea = document.getElementById("content-area");
@@ -34,8 +42,12 @@ function loadContent(url) {
 			})
 			.then((html) => {
 				contentArea.innerHTML = html;
-
-				// If we loaded "index.php", set up the sub-tab system
+				if (url === "blog_page.php") {
+					if (window.initializeBlogFeed) {
+						window.initializeBlogFeed();
+					}
+				}
+				// If we loaded "index.php", set up the sub-tab system (Interactions/Substitutes)
 				if (url === "index.php") {
 					initDrugInfoTabs();
 				}

@@ -1,49 +1,20 @@
 <?php
-// rss_fetcher.php
-// Fetching partial items from a Drugs.com RSS feed for pagination.
+// rss_fetcher.php - minimal partial fetch approach
+header('Content-Type: application/json');
+require_once 'config.php';
+require_once 'rss_helpers.php';
 
-function fetchRssBatch($rssUrl, $startIndex = 0, $count = 10) {
-    $items = [];
-    try {
-        // Attempt to get the feed
-        $xmlString = @file_get_contents($rssUrl);
-        if (!$xmlString) {
-            return $items;
-        }
+$start = isset($_GET['start']) ? (int)$_GET['start'] : 0;
+$count = isset($_GET['count']) ? (int)$_GET['count'] : 10;
 
-        $xml = @simplexml_load_string($xmlString);
-        if (!$xml || !isset($xml->channel->item)) {
-            return $items;
-        }
+// Single or multiple feeds if you want
+$feedUrls = 'https://www.drugs.com/feeds/medical_news.xml';
+$items = fetchRssWithFallback($feedUrls);
 
-        // Convert to array
-        $allEntries = [];
-        foreach ($xml->channel->item as $entry) {
-            $allEntries[] = [
-                'title'       => (string)($entry->title ?? ''),
-                'description' => (string)($entry->description ?? ''),
-                'link'        => (string)($entry->link ?? ''),
-                'pubDate'     => (string)($entry->pubDate ?? ''),
-            ];
-        }
+$total = count($items);
+$batch = array_slice($items, $start, $count);
 
-        // Slice the portion we want for pagination
-        $batch = array_slice($allEntries, $startIndex, $count);
-        $items = $batch;
-    } catch (\Exception $e) {
-        // Optionally log error
-    }
-    return $items;
-}
-
-function fetchRssTotalCount($rssUrl) {
-    try {
-        $xmlString = @file_get_contents($rssUrl);
-        if (!$xmlString) return 0;
-        $xml = @simplexml_load_string($xmlString);
-        if (!$xml || !isset($xml->channel->item)) return 0;
-        return count($xml->channel->item);
-    } catch (\Exception $e) {
-        return 0;
-    }
-}
+echo json_encode([
+    'items' => $batch,
+    'total' => $total
+]);

@@ -35,6 +35,7 @@ window.initializeInteractionSearch = function initializeInteractionSearch() {
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ type: "suggestions", query }),
 			});
+
 			const data = await response.json();
 			if (data.error) throw new Error(data.error);
 			renderSuggestions(data.suggestions || []);
