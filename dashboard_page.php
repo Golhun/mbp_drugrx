@@ -94,7 +94,6 @@ $today = date('d M, Y');
   <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
     <div>
       <h1 class="text-4xl font-bold text-gray-800 flex items-center gap-2">
-        <i class="fas fa-tachometer-alt text-pink-500"></i>
         Dashboard
       </h1>
       <p class="text-base text-gray-600 mt-2">
